@@ -3,6 +3,7 @@
 // the Lambda Function URL adapter.
 const { signalForPath, getAttr } = require('./otlp');
 const { filterPayload } = require('./filter');
+const { enrichLogs } = require('./enrich');
 const { forward } = require('./forward');
 const { dashboardHtml } = require('./dashboard');
 
@@ -44,7 +45,11 @@ async function handle(req, deps) {
     await store.recordTally(sig.name, tally);
 
     let result = { forwarded: false, reason: 'nothing whitelisted', status: 0 };
-    if (keptCount > 0) result = await forward(sig.name, filtered, env);
+    if (keptCount > 0) {
+      // Name span-correlated log records so Honeycomb doesn't show "unspecified".
+      if (sig.name === 'logs' && (env.ENRICH_SPAN_EVENT_NAMES || '1') !== '0') enrichLogs(filtered);
+      result = await forward(sig.name, filtered, env);
+    }
     // Always 200/partial-success to the client: OTLP exporters retry on 5xx,
     // and a repo being non-whitelisted is not a transport failure.
     return json(200, { signal: sig.name, kept: keptCount, tally, sink: result });

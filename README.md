@@ -156,9 +156,23 @@ gated by a bearer token (`ADMIN_TOKEN`).
 | `HONEYCOMB_DATASET` | dataset for metrics/logs | `claude-code` |
 | `HONEYCOMB_ENDPOINT` | OTLP sink base URL (use `api.eu1.honeycomb.io` for EU) | `https://api.honeycomb.io` |
 | `ADMIN_TOKEN` | bearer token gating `/admin*` (blank = open) | open |
+| `ENRICH_SPAN_EVENT_NAMES` | name span-correlated log records so Honeycomb doesn't show "unspecified" (see below); set `0` to disable | on |
 
 Forwarding to any other OTLP backend is a one-file change in
 [`src/forward.js`](src/forward.js).
+
+### Span-event naming
+
+Claude Code sends its content records (`user_prompt`, `api_request_body`,
+`api_response_body`, `assistant_response`, tool events) on the **logs** signal
+with a `trace_id`/`span_id`, so Honeycomb renders them as **span events** on the
+trace waterfall. But their identifier lives in `body`/`event.name`, not in the
+`name` field Honeycomb uses for the span-event label — so out of the box they
+all show as **"unspecified"**. You can't fix this in Honeycomb (the label is
+data-driven). The proxy does it instead: [`src/enrich.js`](src/enrich.js) copies
+`event.name` → `name` on each log record before forwarding, so the waterfall
+reads `user_prompt`, `api_response_body`, `tool_result`, … Additive only — it
+never overwrites an existing `name`. Disable with `ENRICH_SPAN_EVENT_NAMES=0`.
 
 ## Persistence options
 
@@ -186,6 +200,7 @@ and skip a database entirely.
 src/
   otlp.js        OTLP/JSON attribute + signal helpers
   filter.js      pure repo-allowlist filter (unit-tested)
+  enrich.js      name span-correlated log records (Honeycomb span events)
   forward.js     POST filtered payload to the OTLP sink (Honeycomb)
   app.js         framework-agnostic router (ingest + admin)
   dashboard.js   inline admin HTML (no build step)
