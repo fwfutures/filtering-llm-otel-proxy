@@ -7,52 +7,81 @@ OpenAI/Anthropic instrumentations, anything that speaks OTLP — and your
 observability backend (this repo targets **Honeycomb**, but any OTLP sink
 works).
 
-Its one job: **only forward telemetry from repositories you've explicitly
-allowlisted, and drop the rest** — then show you a live count of what got
-forwarded vs dropped, per repo.
+Its one job: **only forward telemetry from repos that opted into tracing, and
+drop the rest** — then show you a live count of what got forwarded vs dropped,
+per repo.
 
 > Why? When you turn on Claude Code telemetry across an org, every laptop starts
-> shipping metrics and events. This proxy makes sure only *sanctioned org
-> repositories* reach your paid backend — no rogue side-projects, no personal
-> repos, no surprise ingest bill — with a simple allowlist you manage from a
-> web dashboard.
+> shipping metrics and events. This proxy makes sure only repos that *chose* to
+> be traced reach your paid backend — no rogue side-projects, no personal repos,
+> no surprise ingest bill. Opting in is a one-line file committed to the repo;
+> there's no central list to maintain.
 
 ```
   claude / other LLM tools ──OTLP/HTTP──▶  API Gateway ──▶  Lambda
-                                                              │  match resource.attributes.repo
-                                                              │  against the allowlist
+                                                              │  resource.attributes.tracing == yes ?
                                                               ▼
-                                                  ┌─ allowed ─▶  Honeycomb (OTLP)
+                                                  ┌─ opted in ─▶  Honeycomb (OTLP)
                                                   └─ everything else ─▶  dropped
-                                           counters + allowlist persisted (DynamoDB)
+                                                       counters persisted (DynamoDB)
 ```
 
-![Admin dashboard: allowlist editor and per-repo received / forwarded / dropped counters](docs/dashboard.png)
+![Admin dashboard: per-repo received / forwarded / dropped counters](docs/dashboard.png)
 
-<p align="center"><em>The admin dashboard: edit the repo allowlist, watch received / forwarded / dropped counters per repo.</em></p>
+<p align="center"><em>The admin dashboard: a read-only view of received / forwarded / dropped counters per repo.</em></p>
 
 ## How filtering works
 
-LLM tools stamp a repo identifier onto the OTLP **resource**. With Claude Code
-you set it via `OTEL_RESOURCE_ATTRIBUTES=repo=acme/web-app` when you enable
-telemetry (see [Claude Code environment variables](#claude-code-environment-variables)
-for the full set).
+A repo **opts into tracing** by stamping a resource attribute — `tracing=yes` —
+onto its Claude Code telemetry. The clean, no-wrapper way is a committed
+`.claude/settings.json` (see [Opting a repo in](#opting-a-repo-in)); Claude Code
+exports it as `OTEL_RESOURCE_ATTRIBUTES` before the OTel SDK starts.
 
-The proxy reads `resource.attributes.repo` from every `resourceSpans` /
-`resourceMetrics` / `resourceLogs` entry and keeps only entries whose repo is
-allowlisted. Entries are matched **exactly** (`acme/web-app`) or by
-**prefix** (`acme/*`). Anything not matched — including telemetry with no
-repo attribute — is dropped and counted. Change the attribute name with
-`REPO_ATTR`.
+The proxy reads `resource.attributes.tracing` from every `resourceSpans` /
+`resourceMetrics` / `resourceLogs` entry: if it's truthy (`yes`/`true`/`1`/`on`)
+the resource is forwarded, otherwise it's dropped and counted. That's the whole
+filter — no central allowlist, no repo matching. A developer can override for a
+session with their own `OTEL_RESOURCE_ATTRIBUTES`. Change the attribute name with
+`OPT_IN_ATTR`; a separate `repo` attribute (if present) is used only to label the
+counters.
 
 The proxy handles all three OTLP signals — `/v1/traces`, `/v1/metrics`,
-`/v1/logs` — and passes each whitelisted resource through untouched (it drops
-whole non-allowlisted repos, never individual fields).
+`/v1/logs` — and passes each opted-in resource through untouched (it drops whole
+non-opted-in resources, never individual fields).
+
+## Opting a repo in
+
+Claude Code does **not** derive a repo identifier on its own — with telemetry
+enabled it emits `service.name=claude-code` and host/os attributes, nothing that
+says which repo you're in (verified against `claude` 2.1.195). So a repo opts in
+explicitly, via a committed **`.claude/settings.json`** — Claude Code reads it and
+exports the `env` block before the OTel SDK starts, so every session in that repo
+is tagged, with no launch wrapper and no per-developer setup:
+
+```json
+{ "env": { "OTEL_RESOURCE_ATTRIBUTES": "tracing=yes,repo=acme/web-app" } }
+```
+
+`tracing=yes` is what the proxy forwards on; `repo=<org>/<repo>` just labels the
+counters. Generate and commit this file in one step with the helper:
+
+```bash
+cd path/to/your/repo
+/path/to/otel-filter/scripts/tag-repo.sh   # derives repo from the git origin remote
+git add .claude/settings.json && git commit -m "opt into Claude Code tracing"
+```
+
+Only repos that carry `tracing=yes` are forwarded; everything else is dropped and
+counted. A developer can override for one session with their own
+`OTEL_RESOURCE_ATTRIBUTES` (e.g. `tracing=no` to opt out, or `tracing=yes` to try
+a repo that hasn't committed the file).
 
 ## Claude Code environment variables
 
-These are set **on the machine running `claude`**, not on the proxy. They control
-what Claude Code exports and where.
+Enabling telemetry and pointing it at the proxy is done with the env vars below —
+deploy them once, globally (a shell profile, or Claude Code **managed settings**
+pushed by IT). The per-repo `.claude/settings.json` above then adds the opt-in
+tag on top.
 
 **Required — metrics + events:**
 
@@ -62,7 +91,6 @@ export OTEL_METRICS_EXPORTER=otlp
 export OTEL_LOGS_EXPORTER=otlp
 export OTEL_EXPORTER_OTLP_PROTOCOL=http/json          # or http/protobuf, grpc
 export OTEL_EXPORTER_OTLP_ENDPOINT=https://<your-endpoint>
-export OTEL_RESOURCE_ATTRIBUTES=repo=acme/web-app     # ← the allowlist key (required)
 ```
 
 This exports metrics (`claude_code.token.usage`, `.cost.usage`, `.session.count`)
@@ -99,8 +127,8 @@ Gotchas learned the hard way:
   `OTEL_LOG_USER_PROMPTS=1` and `OTEL_LOG_ASSISTANT_RESPONSES=1` explicitly for
   the readable text.
 - **Content leaves your machine only to your OTLP endpoint — never to Anthropic.**
-  It can contain source, secrets, and PII; enable deliberately, and use the repo
-  allowlist to scope which repos are allowed to send it.
+  It can contain source, secrets, and PII; enable deliberately, and rely on the
+  opt-in to scope which repos send it.
 - **Bodies can truncate** (`body_truncated=true`) for large contexts.
 
 The response text and raw bodies arrive on the **logs** signal but carry the same
@@ -110,13 +138,14 @@ trace — use the trace's **View events** to read them inline.
 ## Quick start (local, zero dependencies)
 
 ```bash
-npm test                         # unit + e2e tests against captured Claude Code payloads
-WHITELIST='acme/*' npm start # serves OTLP + the admin dashboard on :4318
+npm test        # unit + e2e tests against captured Claude Code payloads
+npm start       # serves OTLP + the admin dashboard on :4318
 open http://localhost:4318/admin
 ```
 
 `npm start` uses the in-memory store — no AWS, no database. Point any OTLP
-exporter at `http://localhost:4318` and watch the counters move.
+exporter (with `tracing=yes` in its resource attributes) at
+`http://localhost:4318` and watch the counters move.
 
 ## Deploy to AWS
 
@@ -148,10 +177,10 @@ gated by a bearer token (`ADMIN_TOKEN`).
 
 | Env | Purpose | Default |
 |-----|---------|---------|
-| `STORE` | `dynamo` for production, else in-memory | in-memory |
+| `STORE` | `dynamo` for production (counters), else in-memory | in-memory |
 | `TABLE_NAME` | DynamoDB table (when `STORE=dynamo`) | — |
-| `WHITELIST` | comma-separated seed allowlist (in-memory store only) | empty |
-| `REPO_ATTR` | resource attribute holding the repo id | `repo` |
+| `OPT_IN_ATTR` | resource attribute a repo sets to opt into tracing | `tracing` |
+| `REPO_ATTR` | resource attribute used only to label the counters | `repo` |
 | `HONEYCOMB_API_KEY` | ingest key; **absent = dry-run** (filter & count, don't send) | — |
 | `HONEYCOMB_DATASET` | dataset for metrics/logs | `claude-code` |
 | `HONEYCOMB_ENDPOINT` | OTLP sink base URL (use `api.eu1.honeycomb.io` for EU) | `https://api.honeycomb.io` |
@@ -176,37 +205,40 @@ never overwrites an existing `name`. Disable with `ENRICH_SPAN_EVENT_NAMES=0`.
 
 ## Persistence options
 
-The store is a small interface (`getWhitelist / addRepo / removeRepo /
-recordTally / getStats`) under [`src/store/`](src/store/). Two are implemented;
-the rest are drop-in replacements.
+Opt-in lives in each repo's `.claude/settings.json` (in Git), so the proxy has
+**no allowlist to persist** — the store holds only the dashboard **counters**,
+behind a tiny interface (`recordTally / getStats`) under
+[`src/store/`](src/store/). Two are implemented; the rest are drop-in.
 
-| Option | Whitelist | Counters | VPC? | Notes |
-|--------|-----------|----------|------|-------|
-| **DynamoDB** ✅ *(default, implemented)* | item w/ String Set | atomic `ADD` increments, no races | No | Best fit for Lambda: serverless, pay-per-request, SDK already in the runtime. |
-| **In-memory** ✅ *(implemented)* | Set | object | No | Dev/tests only — resets on cold start. |
-| **SSM Parameter Store / env** | one param | ✗ | No | Great for a rarely-changing allowlist as config; pair with EMF for counts. |
-| **S3** | JSON blob | ✗ (last-writer-wins) | No | Cheap for the allowlist; unsafe for counters under concurrency. |
-| **Upstash Redis / Momento** | SET | `INCR` atomic | No | HTTP/serverless Redis: atomic counters + fast allowlist, no VPC. |
-| **CloudWatch EMF** | ✗ | ✅ (as metrics) | No | Emit dropped/forwarded as metrics for alarms; complements any store. |
-| **RDS / Aurora Serverless v2** | table | `UPDATE … +1` | Yes | Only if you already run Postgres/MySQL; adds VPC + cold-start cost. |
+| Option | Counters | VPC? | Notes |
+|--------|----------|------|-------|
+| **DynamoDB** ✅ *(default, implemented)* | atomic `ADD` increments, no races | No | Best fit for Lambda: serverless, pay-per-request, SDK already in the runtime. |
+| **In-memory** ✅ *(implemented)* | object | No | Dev/tests only — resets on cold start. |
+| **CloudWatch EMF** | ✅ (as metrics) | No | Emit dropped/forwarded as metrics for alarms/dashboards; no table at all. |
+| **Upstash Redis / Momento** | `INCR` atomic | No | HTTP/serverless Redis, no VPC. |
+| **RDS / Aurora Serverless v2** | `UPDATE … +1` | Yes | Only if you already run Postgres/MySQL; adds VPC + cold-start cost. |
 
-**Recommendation:** DynamoDB. If you'd rather keep the allowlist in Git/config
-and only need aggregate drop counts, use **SSM Parameter Store + CloudWatch EMF**
-and skip a database entirely.
+Counters are approximate operational stats, not billing-grade — losing them on a
+cold start (in-memory) is harmless.
+
+**Recommendation:** DynamoDB. Or, if you don't need a live per-repo dashboard,
+drop the table entirely and emit **CloudWatch EMF** counts for alarms instead.
 
 ## Project layout
 
 ```
 src/
   otlp.js        OTLP/JSON attribute + signal helpers
-  filter.js      pure repo-allowlist filter (unit-tested)
+  filter.js      pure opt-in filter — tracing=yes ? forward : drop (unit-tested)
   enrich.js      name span-correlated log records (Honeycomb span events)
   forward.js     POST filtered payload to the OTLP sink (Honeycomb)
   app.js         framework-agnostic router (ingest + admin)
-  dashboard.js   inline admin HTML (no build step)
+  dashboard.js   inline admin HTML (read-only counters, no build step)
   server.js      local http adapter
   lambda.js      API Gateway / Function URL adapter
-  store/         memory (default) · dynamo · factory
+  store/         memory (default) · dynamo · factory  (counters only)
+scripts/
+  tag-repo.sh    write .claude/settings.json to opt a repo into tracing
 test/            node --test, runs against real captured Claude Code payloads
 infra/           SAM template + plain-CLI deploy script
 ```

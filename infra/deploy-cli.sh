@@ -46,7 +46,7 @@ echo "   $ZIP"
 echo "== 4/6 create/update function $NAME =="
 ENVFILE=$(mktemp).json
 cat > "$ENVFILE" <<JSON
-{"Variables":{"STORE":"dynamo","TABLE_NAME":"$TABLE","HONEYCOMB_DATASET":"claude-code","HONEYCOMB_ENDPOINT":"https://api.honeycomb.io","ADMIN_TOKEN":"$ADMIN_TOKEN","REPO_ATTR":"repo","HONEYCOMB_API_KEY":"${HONEYCOMB_API_KEY:-}"}}
+{"Variables":{"STORE":"dynamo","TABLE_NAME":"$TABLE","HONEYCOMB_DATASET":"claude-code","HONEYCOMB_ENDPOINT":"https://api.honeycomb.io","ADMIN_TOKEN":"$ADMIN_TOKEN","REPO_ATTR":"repo","OPT_IN_ATTR":"tracing","HONEYCOMB_API_KEY":"${HONEYCOMB_API_KEY:-}"}}
 JSON
 if aws lambda get-function --function-name "$NAME" >/dev/null 2>&1; then
   aws lambda update-function-code --function-name "$NAME" --zip-file "fileb://$ZIP" >/dev/null

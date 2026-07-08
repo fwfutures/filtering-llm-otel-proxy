@@ -1,9 +1,10 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  otel-filter — OTLP ingest Lambda that gates Claude Code / LLM telemetry by a
-  repo allowlist and forwards the rest to Honeycomb. DynamoDB holds the
-  allowlist and per-repo counters. Exposed via a public Lambda Function URL.
+  otel-filter — OTLP ingest Lambda that forwards Claude Code / LLM telemetry to
+  Honeycomb only for repos that opted in (resource attribute tracing=yes), and
+  drops the rest. DynamoDB holds per-repo counters. Fronted by a public API
+  Gateway HTTP API.
 
 Parameters:
   HoneycombApiKey:
@@ -25,7 +26,11 @@ Parameters:
   RepoAttr:
     Type: String
     Default: repo
-    Description: Resource attribute carrying the repo id.
+    Description: Resource attribute used to label the counters (not the filter key).
+  OptInAttr:
+    Type: String
+    Default: tracing
+    Description: Resource attribute a repo sets to yes to opt into tracing.
 
 Resources:
   Table:
@@ -56,6 +61,7 @@ Resources:
           HONEYCOMB_ENDPOINT: !Ref HoneycombEndpoint
           ADMIN_TOKEN: !Ref AdminToken
           REPO_ATTR: !Ref RepoAttr
+          OPT_IN_ATTR: !Ref OptInAttr
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref Table

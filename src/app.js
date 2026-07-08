@@ -39,19 +39,20 @@ async function handle(req, deps) {
     } catch {
       return json(400, { error: 'invalid JSON body' });
     }
-    const whitelist = await store.getWhitelist();
-    const repoKey = env.REPO_ATTR || 'repo';
-    const { filtered, tally, keptCount } = filterPayload(payload, sig.field, whitelist, repoKey);
+    const { filtered, tally, keptCount } = filterPayload(payload, sig.field, {
+      optInKey: env.OPT_IN_ATTR || 'tracing',
+      repoKey: env.REPO_ATTR || 'repo',
+    });
     await store.recordTally(sig.name, tally);
 
-    let result = { forwarded: false, reason: 'nothing whitelisted', status: 0 };
+    let result = { forwarded: false, reason: 'nothing opted in', status: 0 };
     if (keptCount > 0) {
       // Name span-correlated log records so Honeycomb doesn't show "unspecified".
       if (sig.name === 'logs' && (env.ENRICH_SPAN_EVENT_NAMES || '1') !== '0') enrichLogs(filtered);
       result = await forward(sig.name, filtered, env);
     }
     // Always 200/partial-success to the client: OTLP exporters retry on 5xx,
-    // and a repo being non-whitelisted is not a transport failure.
+    // and a resource not opting into tracing is not a transport failure.
     return json(200, { signal: sig.name, kept: keptCount, tally, sink: result });
   }
 
@@ -64,17 +65,6 @@ async function handle(req, deps) {
   // --- Admin: JSON API ---------------------------------------------------
   if (path.startsWith('/admin/api/')) {
     if (!authed(req, env)) return json(401, { error: 'unauthorized' });
-    if (path === '/admin/api/whitelist' && method === 'GET') {
-      return json(200, { whitelist: await store.getWhitelist() });
-    }
-    if (path === '/admin/api/whitelist' && (method === 'POST' || method === 'DELETE')) {
-      let repo;
-      try { repo = JSON.parse(req.body || '{}').repo; } catch { /* ignore */ }
-      if (!repo || typeof repo !== 'string') return json(400, { error: 'repo (string) required' });
-      if (method === 'POST') await store.addRepo(repo.trim());
-      else await store.removeRepo(repo.trim());
-      return json(200, { whitelist: await store.getWhitelist() });
-    }
     if (path === '/admin/api/stats' && method === 'GET') {
       return json(200, await store.getStats());
     }

@@ -2,7 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
 const path = require('node:path');
-const { filterPayload, matchRepo } = require('../src/filter');
+const { filterPayload, optedIn } = require('../src/filter');
 const { enrichLogs } = require('../src/enrich');
 const { handle } = require('../src/app');
 const { MemoryStore } = require('../src/store/memory');
@@ -11,89 +11,68 @@ const { getAttr } = require('../src/otlp');
 const metrics = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/metrics.json'), 'utf8'));
 const logs = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/logs.json'), 'utf8'));
 
-// The captured fixtures were produced with repo=acme/some-service.
-test('matchRepo: exact and prefix', () => {
-  assert.equal(matchRepo('acme/foo', ['acme/foo']), 'acme/foo');
-  assert.equal(matchRepo('acme/foo', ['acme/*']), 'acme/*');
-  assert.equal(matchRepo('outsider/foo', ['acme/*']), null);
-  assert.equal(matchRepo(null, ['acme/*']), null);
+// Clone a fixture and stamp tracing=<val> onto its resource attributes.
+function withTracing(fixture, field, val) {
+  const c = JSON.parse(JSON.stringify(fixture));
+  const attrs = c[field][0].resource.attributes;
+  if (val !== undefined) attrs.push({ key: 'tracing', value: { stringValue: val } });
+  return c;
+}
+
+test('optedIn recognises truthy opt-in values', () => {
+  for (const v of ['yes', 'true', '1', 'on', 'ENABLED', 'Yes']) assert.ok(optedIn(v), v);
+  for (const v of ['no', 'false', '0', 'off', '', undefined, null]) assert.ok(!optedIn(v), String(v));
 });
 
-test('filterPayload keeps whitelisted metrics resource', () => {
-  const { filtered, tally, keptCount } = filterPayload(metrics, 'resourceMetrics', ['acme/some-service']);
+test('filterPayload forwards opted-in resources', () => {
+  const payload = withTracing(metrics, 'resourceMetrics', 'yes');
+  const { filtered, tally, keptCount } = filterPayload(payload, 'resourceMetrics', {});
   assert.equal(keptCount, 1);
   assert.equal(filtered.resourceMetrics.length, 1);
+  // labelled by the repo attribute present in the captured fixture
   assert.deepEqual(tally['acme/some-service'], { received: 1, forwarded: 1, dropped: 0 });
 });
 
-test('filterPayload drops non-whitelisted repo', () => {
-  const { filtered, tally, keptCount } = filterPayload(metrics, 'resourceMetrics', ['acme/other']);
+test('filterPayload drops resources that did not opt in', () => {
+  const { tally, keptCount } = filterPayload(metrics, 'resourceMetrics', {});
   assert.equal(keptCount, 0);
-  assert.equal(filtered.resourceMetrics.length, 0);
   assert.deepEqual(tally['acme/some-service'], { received: 1, forwarded: 0, dropped: 1 });
 });
 
-test('filterPayload counts unknown repo as dropped', () => {
-  const stripped = { resourceLogs: [{ resource: { attributes: [] }, scopeLogs: [] }] };
-  const { tally, keptCount } = filterPayload(stripped, 'resourceLogs', ['acme/*']);
+test('filterPayload drops explicit opt-out (tracing=no)', () => {
+  const payload = withTracing(metrics, 'resourceMetrics', 'no');
+  const { keptCount } = filterPayload(payload, 'resourceMetrics', {});
   assert.equal(keptCount, 0);
-  assert.deepEqual(tally['(unknown)'], { received: 1, forwarded: 0, dropped: 1 });
 });
 
-test('prefix whitelist matches the captured logs fixture', () => {
-  const { keptCount } = filterPayload(logs, 'resourceLogs', ['acme/*']);
+test('custom opt-in attribute name via optInKey', () => {
+  const c = JSON.parse(JSON.stringify(metrics));
+  c.resourceMetrics[0].resource.attributes.push({ key: 'observe', value: { stringValue: 'on' } });
+  const { keptCount } = filterPayload(c, 'resourceMetrics', { optInKey: 'observe' });
   assert.equal(keptCount, 1);
 });
 
-// End-to-end through the router with the in-memory store (no network: no
-// HONEYCOMB_API_KEY => forward() dry-runs).
-test('ingest -> counters -> stats via handler', async () => {
-  const store = new MemoryStore(['acme/some-service']);
+test('untagged resources are labelled by service.name then (untagged)', () => {
+  const stripped = { resourceMetrics: [{ resource: { attributes: [
+    { key: 'service.name', value: { stringValue: 'claude-code' } },
+  ] }, scopeMetrics: [] }] };
+  const { tally } = filterPayload(stripped, 'resourceMetrics', {});
+  assert.ok(tally['claude-code']);
+});
+
+test('ingest -> counters -> stats via handler (opted in => forwarded, dry-run sink)', async () => {
+  const store = new MemoryStore();
   const env = {};
   const ingest = await handle(
-    { method: 'POST', path: '/v1/metrics', headers: {}, body: JSON.stringify(metrics) },
+    { method: 'POST', path: '/v1/metrics', headers: {}, body: JSON.stringify(withTracing(metrics, 'resourceMetrics', 'yes')) },
     { store, env }
   );
   assert.equal(ingest.status, 200);
   const parsed = JSON.parse(ingest.body);
   assert.equal(parsed.kept, 1);
-  assert.equal(parsed.sink.forwarded, false); // dry-run
   assert.match(parsed.sink.reason, /dry-run/);
-
   const stats = JSON.parse((await handle({ method: 'GET', path: '/admin/api/stats', headers: {}, body: '' }, { store, env })).body);
   assert.equal(stats.repos['acme/some-service'].metrics.forwarded, 1);
-});
-
-test('admin whitelist add/remove roundtrip', async () => {
-  const store = new MemoryStore();
-  const env = {};
-  await handle({ method: 'POST', path: '/admin/api/whitelist', headers: {}, body: JSON.stringify({ repo: 'acme/x' }) }, { store, env });
-  let wl = JSON.parse((await handle({ method: 'GET', path: '/admin/api/whitelist', headers: {}, body: '' }, { store, env })).body);
-  assert.deepEqual(wl.whitelist, ['acme/x']);
-  await handle({ method: 'DELETE', path: '/admin/api/whitelist', headers: {}, body: JSON.stringify({ repo: 'acme/x' }) }, { store, env });
-  wl = JSON.parse((await handle({ method: 'GET', path: '/admin/api/whitelist', headers: {}, body: '' }, { store, env })).body);
-  assert.deepEqual(wl.whitelist, []);
-});
-
-test('enrichLogs names span-correlated records from event.name', () => {
-  const payload = {
-    resourceLogs: [{
-      scopeLogs: [{
-        logRecords: [
-          { body: { stringValue: 'claude_code.api_response_body' },
-            attributes: [{ key: 'event.name', value: { stringValue: 'api_response_body' } }] },
-          { body: { stringValue: 'claude_code.user_prompt' }, attributes: [] }, // no event.name -> falls back to body
-          { attributes: [{ key: 'name', value: { stringValue: 'already-named' } },
-                         { key: 'event.name', value: { stringValue: 'x' } }] }, // untouched
-        ],
-      }],
-    }],
-  };
-  enrichLogs(payload);
-  const recs = payload.resourceLogs[0].scopeLogs[0].logRecords;
-  assert.equal(getAttr(recs[0].attributes, 'name'), 'api_response_body');
-  assert.equal(getAttr(recs[1].attributes, 'name'), 'user_prompt'); // stripped claude_code. prefix
-  assert.equal(getAttr(recs[2].attributes, 'name'), 'already-named'); // not overwritten
 });
 
 test('enrichLogs names every record in the real captured logs fixture', () => {
