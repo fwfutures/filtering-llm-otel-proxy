@@ -4,7 +4,7 @@ const { getAttr } = require('./otlp');
 // (default `tracing`) with a truthy value — typically via a committed
 // .claude/settings.json:  { "env": { "OTEL_RESOURCE_ATTRIBUTES": "tracing=yes" } }
 // A developer can override per session with their own OTEL_RESOURCE_ATTRIBUTES.
-// Everything not opted in is dropped. No central allowlist, no repo matching.
+// Everything not opted in is dropped.
 const OPT_IN = new Set(['yes', 'true', '1', 'on', 'enabled']);
 
 function optedIn(value) {

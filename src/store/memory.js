@@ -1,9 +1,7 @@
 // In-memory counters: the reference implementation of the storage contract.
 // Used for local dev and tests. State is per-process, so it resets on cold
 // start — fine for development, not for production (use DynamoStore there).
-//
-// Since tracing is opt-in per repo (a resource attribute), there is no
-// allowlist to persist — the store only holds counters.
+// The store holds only the dashboard counters.
 class MemoryStore {
   constructor() {
     // counters[label][signal] = { received, forwarded, dropped }

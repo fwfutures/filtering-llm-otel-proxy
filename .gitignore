@@ -3,3 +3,4 @@ node_modules/
 *.log
 capture/
 .DS_Store
+.claude/

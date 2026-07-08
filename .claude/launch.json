@@ -1,7 +1,0 @@
-{
-  "version": "0.0.1",
-  "autoPort": true,
-  "configurations": [
-    { "name": "otel-filter", "runtimeExecutable": "node", "runtimeArgs": ["src/server.js"], "port": 4318 }
-  ]
-}

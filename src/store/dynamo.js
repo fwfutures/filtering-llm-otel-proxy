@@ -5,10 +5,8 @@
 // Counters use UpdateItem ADD, which is atomic across concurrent Lambda
 // invocations — no read-modify-write races. AWS SDK v3 ships in the Lambda
 // Node runtime, so this needs no bundled dependency; the require is lazy so
-// local dev (MemoryStore) doesn't need it installed.
-//
-// Tracing is opt-in per repo (a resource attribute), so there is no allowlist
-// to persist — this store only holds counters.
+// local dev (MemoryStore) doesn't need it installed. Holds only the dashboard
+// counters.
 class DynamoStore {
   constructor({ table = process.env.TABLE_NAME, region = process.env.AWS_REGION } = {}) {
     const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');

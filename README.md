@@ -40,10 +40,9 @@ exports it as `OTEL_RESOURCE_ATTRIBUTES` before the OTel SDK starts.
 The proxy reads `resource.attributes.tracing` from every `resourceSpans` /
 `resourceMetrics` / `resourceLogs` entry: if it's truthy (`yes`/`true`/`1`/`on`)
 the resource is forwarded, otherwise it's dropped and counted. That's the whole
-filter — no central allowlist, no repo matching. A developer can override for a
-session with their own `OTEL_RESOURCE_ATTRIBUTES`. Change the attribute name with
-`OPT_IN_ATTR`; a separate `repo` attribute (if present) is used only to label the
-counters.
+filter. A developer can override for a session with their own
+`OTEL_RESOURCE_ATTRIBUTES`. Change the attribute name with `OPT_IN_ATTR`; a
+separate `repo` attribute (if present) is used only to label the counters.
 
 The proxy handles all three OTLP signals — `/v1/traces`, `/v1/metrics`,
 `/v1/logs` — and passes each opted-in resource through untouched (it drops whole
@@ -54,12 +53,25 @@ non-opted-in resources, never individual fields).
 Claude Code does **not** derive a repo identifier on its own — with telemetry
 enabled it emits `service.name=claude-code` and host/os attributes, nothing that
 says which repo you're in (verified against `claude` 2.1.195). So a repo opts in
-explicitly, via a committed **`.claude/settings.json`** — Claude Code reads it and
-exports the `env` block before the OTel SDK starts, so every session in that repo
-is tagged, with no launch wrapper and no per-developer setup:
+explicitly, via a committed **`.claude/settings.json`**. Claude Code reads it and
+exports the `env` block *before* the OTel SDK starts, so the whole telemetry
+setup can live in that one file: a developer clones the repo and runs plain
+`claude` — no shell config, no launch wrapper — and telemetry streams to the
+proxy.
 
-```json
-{ "env": { "OTEL_RESOURCE_ATTRIBUTES": "tracing=yes,repo=acme/web-app" } }
+```jsonc
+{
+  "env": {
+    "CLAUDE_CODE_ENABLE_TELEMETRY": "1",
+    "CLAUDE_CODE_ENHANCED_TELEMETRY_BETA": "1",     // spans / trace waterfalls
+    "OTEL_METRICS_EXPORTER": "otlp",
+    "OTEL_LOGS_EXPORTER": "otlp",
+    "OTEL_TRACES_EXPORTER": "otlp",
+    "OTEL_EXPORTER_OTLP_PROTOCOL": "http/json",
+    "OTEL_EXPORTER_OTLP_ENDPOINT": "https://your-proxy.example.com",
+    "OTEL_RESOURCE_ATTRIBUTES": "tracing=yes,repo=acme/web-app"
+  }
+}
 ```
 
 `tracing=yes` is what the proxy forwards on; `repo=<org>/<repo>` just labels the
@@ -67,50 +79,53 @@ counters. Generate and commit this file in one step with the helper:
 
 ```bash
 cd path/to/your/repo
-/path/to/otel-filter/scripts/tag-repo.sh   # derives repo from the git origin remote
-git add .claude/settings.json && git commit -m "opt into Claude Code tracing"
+/path/to/otel-filter/scripts/tag-repo.sh --endpoint https://your-proxy.example.com
+git add .claude/settings.json && git commit -m "stream Claude Code telemetry"
 ```
+
+Add `--content` to also capture prompts, responses, and tool I/O (see
+[content capture](#content-capture-prompts-responses-tool-io) — it sends source
+and PII to your endpoint). The helper derives `repo` from the git origin remote.
 
 Only repos that carry `tracing=yes` are forwarded; everything else is dropped and
 counted. A developer can override for one session with their own
-`OTEL_RESOURCE_ATTRIBUTES` (e.g. `tracing=no` to opt out, or `tracing=yes` to try
-a repo that hasn't committed the file).
+`OTEL_RESOURCE_ATTRIBUTES` (e.g. `tracing=no` to opt out).
 
-## Claude Code environment variables
+> Prefer central control? Put everything except `OTEL_RESOURCE_ATTRIBUTES` in
+> org-wide **managed settings** (deployed by IT), and let each repo's
+> `.claude/settings.json` carry just `"OTEL_RESOURCE_ATTRIBUTES": "tracing=yes,repo=…"`.
+> Same result; the endpoint and content policy stay centrally owned.
 
-Enabling telemetry and pointing it at the proxy is done with the env vars below —
-deploy them once, globally (a shell profile, or Claude Code **managed settings**
-pushed by IT). The per-repo `.claude/settings.json` above then adds the opt-in
-tag on top.
+## What each variable does
 
-**Required — metrics + events:**
+The reference for the values used above.
 
-```bash
-export CLAUDE_CODE_ENABLE_TELEMETRY=1
-export OTEL_METRICS_EXPORTER=otlp
-export OTEL_LOGS_EXPORTER=otlp
-export OTEL_EXPORTER_OTLP_PROTOCOL=http/json          # or http/protobuf, grpc
-export OTEL_EXPORTER_OTLP_ENDPOINT=https://<your-endpoint>
-```
+**Telemetry + signals:**
 
-This exports metrics (`claude_code.token.usage`, `.cost.usage`, `.session.count`)
-and log events (`user_prompt`, `api_request`, `assistant_response`,
-`mcp_server_connection`, …).
+| Variable | Value | Effect |
+|----------|-------|--------|
+| `CLAUDE_CODE_ENABLE_TELEMETRY` | `1` | master switch |
+| `OTEL_METRICS_EXPORTER` / `OTEL_LOGS_EXPORTER` | `otlp` | export metrics (`claude_code.token.usage`, `.cost.usage`, …) and log events (`user_prompt`, `api_request`, `assistant_response`, …) |
+| `OTEL_EXPORTER_OTLP_PROTOCOL` | `http/json` | also `http/protobuf`, `grpc` |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | your proxy URL | base for `/v1/{metrics,logs,traces}` |
 
-**Full distributed traces** (the nice Honeycomb waterfalls — root
+**Full distributed traces** — the Honeycomb waterfalls (root
 `claude_code.interaction` → `claude_code.llm_request` / `claude_code.tool` spans
-with `gen_ai.*` semantic conventions) — add:
+with `gen_ai.*` semantic conventions):
 
-```bash
-export CLAUDE_CODE_ENHANCED_TELEMETRY_BETA=1          # beta flag; enables span tracing
-export OTEL_TRACES_EXPORTER=otlp
-```
+| Variable | Value | Effect |
+|----------|-------|--------|
+| `CLAUDE_CODE_ENHANCED_TELEMETRY_BETA` | `1` | beta flag that enables span tracing |
+| `OTEL_TRACES_EXPORTER` | `otlp` | export spans |
 
 Tracing is **not plan-gated** — it works on any plan, gated only by this beta
 opt-in. (Claude Cowork / office-agents telemetry is a separate, Team/Enterprise,
 admin-portal-configured surface.)
 
-**Prompt / response / tool content** — redacted by default; opt in per signal:
+### Content capture (prompts, responses, tool I/O)
+
+Redacted by default; opt in per signal (the helper's `--content` flag sets the
+first four):
 
 | Variable | Default | Adds |
 |----------|---------|------|
@@ -205,10 +220,10 @@ never overwrites an existing `name`. Disable with `ENRICH_SPAN_EVENT_NAMES=0`.
 
 ## Persistence options
 
-Opt-in lives in each repo's `.claude/settings.json` (in Git), so the proxy has
-**no allowlist to persist** — the store holds only the dashboard **counters**,
-behind a tiny interface (`recordTally / getStats`) under
-[`src/store/`](src/store/). Two are implemented; the rest are drop-in.
+Opt-in lives in each repo's `.claude/settings.json` (in Git), so the proxy is
+almost stateless — it persists only the dashboard **counters**, behind a tiny
+interface (`recordTally / getStats`) under [`src/store/`](src/store/). Two are
+implemented; the rest are drop-in.
 
 | Option | Counters | VPC? | Notes |
 |--------|----------|------|-------|

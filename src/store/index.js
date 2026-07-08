@@ -1,7 +1,6 @@
 // Store factory. STORE=dynamo selects DynamoDB (production); anything else
-// (default) uses the in-memory store. The store only holds counters now —
-// tracing is opt-in per repo via a resource attribute, so there is no
-// allowlist to persist.
+// (default) uses the in-memory store. The store holds only the dashboard
+// counters.
 const { MemoryStore } = require('./memory');
 
 function createStore(env = process.env) {
