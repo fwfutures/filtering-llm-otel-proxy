@@ -111,9 +111,10 @@ Add `--content` to also capture prompts, responses, and tool I/O (see
 [content capture](#content-capture-prompts-responses-tool-io) — it sends source
 and PII to your endpoint). The helper derives `repo` from the git origin remote.
 
-Only repos that carry `tracing=yes` are forwarded; everything else is dropped and
-counted. A developer can override for one session with their own
-`OTEL_RESOURCE_ATTRIBUTES` (e.g. `tracing=no` to opt out).
+Repos that carry `tracing=yes` are forwarded in full; everything else is
+forwarded [redacted](#redaction) (or dropped with `FORWARD_REDACTED=0`). A
+developer can override for one session with their own `OTEL_RESOURCE_ATTRIBUTES`
+(e.g. `tracing=no`).
 
 > Prefer central control? Put everything except `OTEL_RESOURCE_ATTRIBUTES` in
 > org-wide **managed settings** (deployed by IT), and let each repo's
@@ -211,6 +212,69 @@ this repo fronts the Lambda with an **API Gateway HTTP API** instead — public,
 unauthenticated, and not caught by that guardrail. The OTLP ingest paths are
 open (exporters can't send credentials); the `/admin` dashboard and API are
 gated by a bearer token (`ADMIN_TOKEN`).
+
+## Alternative: send directly to Honeycomb
+
+If you don't need the proxy's gating, you can point Claude Code straight at
+Honeycomb. It's the simplest possible setup — but you give up what the proxy
+does: **no `tracing=yes` opt-in** (every configured repo sends), **no redaction**
+for non-opted-in repos, and **no span-event naming** (the `api_request_body` /
+`assistant_response` records show as "unspecified" in the waterfall). Every repo
+that has the config sends full content.
+
+Going direct means the Honeycomb **ingest key** lives on each developer's
+machine. Keep it out of the repo by splitting the config across two files —
+Claude Code merges their `env` blocks key-by-key, with this precedence
+(highest wins, and merges are per-key): **Managed → CLI → Local → Project → User**.
+
+**1. Managed settings** — the secret and transport, deployed by IT, not in any
+repo. Managed settings sit at the top of the precedence chain, so a developer
+can't redirect or disable telemetry by editing their own settings. Paths:
+
+| OS | Path |
+|----|------|
+| macOS | `/Library/Application Support/ClaudeCode/managed-settings.json` |
+| Linux / WSL | `/etc/claude-code/managed-settings.json` |
+| Windows | `C:\Program Files\ClaudeCode\managed-settings.json` |
+
+```json
+{
+  "env": {
+    "CLAUDE_CODE_ENABLE_TELEMETRY": "1",
+    "CLAUDE_CODE_ENHANCED_TELEMETRY_BETA": "1",
+    "OTEL_METRICS_EXPORTER": "otlp",
+    "OTEL_LOGS_EXPORTER": "otlp",
+    "OTEL_TRACES_EXPORTER": "otlp",
+    "OTEL_EXPORTER_OTLP_PROTOCOL": "http/protobuf",
+    "OTEL_EXPORTER_OTLP_ENDPOINT": "https://api.honeycomb.io",
+    "OTEL_EXPORTER_OTLP_HEADERS": "x-honeycomb-team=YOUR_HONEYCOMB_INGEST_KEY,x-honeycomb-dataset=claude-code"
+  }
+}
+```
+
+**2. Repo `.claude/settings.json`** — committed, per-repo, no secret. Just the
+resource label and (optionally) content-capture flags:
+
+```json
+{
+  "env": {
+    "OTEL_LOG_USER_PROMPTS": "1",
+    "OTEL_LOG_ASSISTANT_RESPONSES": "1",
+    "OTEL_LOG_TOOL_DETAILS": "1",
+    "OTEL_LOG_TOOL_CONTENT": "1",
+    "OTEL_RESOURCE_ATTRIBUTES": "repo=acme/web-app"
+  }
+}
+```
+
+Then plain `claude` in the repo streams to Honeycomb — auth from managed
+settings, labels from the repo file.
+
+> **Caveat:** managed settings keeps the key out of git and makes it
+> IT-controlled, but the file must be readable by the user's `claude` process
+> (`644`), so a determined local user can still read it. The only way to keep the
+> key entirely off developer machines is the proxy — clients get just the proxy
+> URL, and the key stays server-side.
 
 ## Configuration
 
