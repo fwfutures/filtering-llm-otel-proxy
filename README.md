@@ -34,15 +34,9 @@ forwarded vs dropped, per repo.
 ## How filtering works
 
 LLM tools stamp a repo identifier onto the OTLP **resource**. With Claude Code
-you set it via `OTEL_RESOURCE_ATTRIBUTES` when you enable telemetry:
-
-```bash
-export CLAUDE_CODE_ENABLE_TELEMETRY=1
-export OTEL_METRICS_EXPORTER=otlp OTEL_LOGS_EXPORTER=otlp
-export OTEL_EXPORTER_OTLP_PROTOCOL=http/json
-export OTEL_EXPORTER_OTLP_ENDPOINT=https://<your-endpoint>
-export OTEL_RESOURCE_ATTRIBUTES=repo=acme/web-app   # ← the allowlist key
-```
+you set it via `OTEL_RESOURCE_ATTRIBUTES=repo=acme/web-app` when you enable
+telemetry (see [Claude Code environment variables](#claude-code-environment-variables)
+for the full set).
 
 The proxy reads `resource.attributes.repo` from every `resourceSpans` /
 `resourceMetrics` / `resourceLogs` entry and keeps only entries whose repo is
@@ -51,10 +45,67 @@ allowlisted. Entries are matched **exactly** (`acme/web-app`) or by
 repo attribute — is dropped and counted. Change the attribute name with
 `REPO_ATTR`.
 
-All three OTLP signals are handled. Claude Code emits **metrics**
-(`claude_code.token.usage`, `.cost.usage`, `.session.count`) and **logs/events**
-(`user_prompt`, `mcp_server_connection`, …); the `/v1/traces` path is there for
-other OTLP tracers.
+The proxy handles all three OTLP signals — `/v1/traces`, `/v1/metrics`,
+`/v1/logs` — and passes each whitelisted resource through untouched (it drops
+whole non-allowlisted repos, never individual fields).
+
+## Claude Code environment variables
+
+These are set **on the machine running `claude`**, not on the proxy. They control
+what Claude Code exports and where.
+
+**Required — metrics + events:**
+
+```bash
+export CLAUDE_CODE_ENABLE_TELEMETRY=1
+export OTEL_METRICS_EXPORTER=otlp
+export OTEL_LOGS_EXPORTER=otlp
+export OTEL_EXPORTER_OTLP_PROTOCOL=http/json          # or http/protobuf, grpc
+export OTEL_EXPORTER_OTLP_ENDPOINT=https://<your-endpoint>
+export OTEL_RESOURCE_ATTRIBUTES=repo=acme/web-app     # ← the allowlist key (required)
+```
+
+This exports metrics (`claude_code.token.usage`, `.cost.usage`, `.session.count`)
+and log events (`user_prompt`, `api_request`, `assistant_response`,
+`mcp_server_connection`, …).
+
+**Full distributed traces** (the nice Honeycomb waterfalls — root
+`claude_code.interaction` → `claude_code.llm_request` / `claude_code.tool` spans
+with `gen_ai.*` semantic conventions) — add:
+
+```bash
+export CLAUDE_CODE_ENHANCED_TELEMETRY_BETA=1          # beta flag; enables span tracing
+export OTEL_TRACES_EXPORTER=otlp
+```
+
+Tracing is **not plan-gated** — it works on any plan, gated only by this beta
+opt-in. (Claude Cowork / office-agents telemetry is a separate, Team/Enterprise,
+admin-portal-configured surface.)
+
+**Prompt / response / tool content** — redacted by default; opt in per signal:
+
+| Variable | Default | Adds |
+|----------|---------|------|
+| `OTEL_LOG_USER_PROMPTS` | off | user prompt text (`user_prompt` attr on the interaction span) |
+| `OTEL_LOG_ASSISTANT_RESPONSES` | off | model response text (`assistant_response` log record) |
+| `OTEL_LOG_TOOL_DETAILS` | off | tool names, arguments, commands (`full_command` attr) |
+| `OTEL_LOG_TOOL_CONTENT` | off | tool input/output (`tool.output` span event; needs tracing on) |
+| `OTEL_LOG_RAW_API_BODIES` | off | full Messages API request/response JSON (`api_request_body` / `api_response_body` log records) |
+
+Gotchas learned the hard way:
+
+- **The content flags do not cascade.** `OTEL_LOG_RAW_API_BODIES=1` alone still
+  leaves `user_prompt` and `assistant_response` `<REDACTED>` — set
+  `OTEL_LOG_USER_PROMPTS=1` and `OTEL_LOG_ASSISTANT_RESPONSES=1` explicitly for
+  the readable text.
+- **Content leaves your machine only to your OTLP endpoint — never to Anthropic.**
+  It can contain source, secrets, and PII; enable deliberately, and use the repo
+  allowlist to scope which repos are allowed to send it.
+- **Bodies can truncate** (`body_truncated=true`) for large contexts.
+
+The response text and raw bodies arrive on the **logs** signal but carry the same
+`trace_id`/`span_id` as their `llm_request` span, so Honeycomb ties them to the
+trace — use the trace's **View events** to read them inline.
 
 ## Quick start (local, zero dependencies)
 
