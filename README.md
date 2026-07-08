@@ -7,22 +7,23 @@ OpenAI/Anthropic instrumentations, anything that speaks OTLP — and your
 observability backend (this repo targets **Honeycomb**, but any OTLP sink
 works).
 
-Its one job: **only forward telemetry from repos that opted into tracing, and
-drop the rest** — then show you a live count of what got forwarded vs dropped,
-per repo.
+Its job: forward **opted-in** repos in full, and forward **everyone else
+redacted** — structure, tokens, cost and timings, but no prompts or content —
+then show you a live count per repo.
 
 > Why? When you turn on Claude Code telemetry across an org, every laptop starts
-> shipping metrics and events. This proxy makes sure only repos that *chose* to
-> be traced reach your paid backend — no rogue side-projects, no personal repos,
-> no surprise ingest bill. Opting in is a one-line file committed to the repo;
-> there's no central list to maintain.
+> shipping metrics, events, and (if content capture is on) prompts and responses.
+> This proxy makes sure only repos that *chose* to be traced send their content;
+> every other repo still gets useful structural traces, with prompts and content
+> stripped before they reach your backend. Opting in is a one-line file committed
+> to the repo; there's no central list to maintain.
 
 ```
   claude / other LLM tools ──OTLP/HTTP──▶  API Gateway ──▶  Lambda
                                                               │  resource.attributes.tracing == yes ?
                                                               ▼
-                                                  ┌─ opted in ─▶  Honeycomb (OTLP)
-                                                  └─ everything else ─▶  dropped
+                                            ┌─ opted in ─▶  Honeycomb, full content
+                                            └─ otherwise ─▶  Honeycomb, REDACTED (no prompts)
                                                        counters persisted (DynamoDB)
 ```
 
@@ -39,14 +40,37 @@ exports it as `OTEL_RESOURCE_ATTRIBUTES` before the OTel SDK starts.
 
 The proxy reads `resource.attributes.tracing` from every `resourceSpans` /
 `resourceMetrics` / `resourceLogs` entry: if it's truthy (`yes`/`true`/`1`/`on`)
-the resource is forwarded, otherwise it's dropped and counted. That's the whole
-filter. A developer can override for a session with their own
+the resource is forwarded in full; otherwise it's forwarded **redacted** (see
+[Redaction](#redaction)). A developer can override for a session with their own
 `OTEL_RESOURCE_ATTRIBUTES`. Change the attribute name with `OPT_IN_ATTR`; a
-separate `repo` attribute (if present) is used only to label the counters.
+separate `repo` attribute (if present) is used only to label the counters. Set
+`FORWARD_REDACTED=0` to hard-drop non-opted-in resources instead of redacting.
 
 The proxy handles all three OTLP signals — `/v1/traces`, `/v1/metrics`,
-`/v1/logs` — and passes each opted-in resource through untouched (it drops whole
-non-opted-in resources, never individual fields).
+`/v1/logs`. Opted-in resources pass through untouched; non-opted-in ones keep
+their full structure with only content fields stripped.
+
+## Redaction
+
+Non-opted-in resources are forwarded with every content field removed, so a repo
+gets structural observability (span waterfalls, `gen_ai.*` attributes, token
+counts, cost, durations, tool names) with **zero prompts, responses, tool I/O, or
+raw API bodies** leaving the machine. The result matches what Claude Code emits
+with all content flags *off* — its own safe shape.
+
+The exact fields stripped were derived by diffing a full-content trace against a
+content-off one, not guessed ([`src/redact.js`](src/redact.js)):
+
+- **Dropped whole** (log records): `api_request_body`, `api_response_body`
+- **Dropped** (span events): `tool.output`, `tool.input`
+- **Redacted to `<REDACTED>`** (attributes): `user_prompt`, `prompt`, `response`,
+  `full_command`, `bash_command`, `tool_parameters`, `tool_input`, `tool_output`,
+  `hook_matcher`, `server_name`
+
+Metadata beside each (e.g. `user_prompt_length`, `duration_ms`, tokens) is kept.
+Extend the redacted-attribute set with `REDACT_ATTRS` (comma-separated). Verified
+end-to-end: a canary secret placed in a prompt, sent with all content flags on
+from a non-opted-in repo, produced **zero** matches in Honeycomb.
 
 ## Opting a repo in
 
@@ -196,6 +220,8 @@ gated by a bearer token (`ADMIN_TOKEN`).
 | `TABLE_NAME` | DynamoDB table (when `STORE=dynamo`) | — |
 | `OPT_IN_ATTR` | resource attribute a repo sets to opt into tracing | `tracing` |
 | `REPO_ATTR` | resource attribute used only to label the counters | `repo` |
+| `FORWARD_REDACTED` | forward non-opted-in resources redacted; set `0` to hard-drop them | on |
+| `REDACT_ATTRS` | extra attribute keys to redact, comma-separated | — |
 | `HONEYCOMB_API_KEY` | ingest key; **absent = dry-run** (filter & count, don't send) | — |
 | `HONEYCOMB_DATASET` | dataset for metrics/logs | `claude-code` |
 | `HONEYCOMB_ENDPOINT` | OTLP sink base URL (use `api.eu1.honeycomb.io` for EU) | `https://api.honeycomb.io` |
@@ -244,7 +270,8 @@ drop the table entirely and emit **CloudWatch EMF** counts for alarms instead.
 ```
 src/
   otlp.js        OTLP/JSON attribute + signal helpers
-  filter.js      pure opt-in filter — tracing=yes ? forward : drop (unit-tested)
+  filter.js      pure opt-in partition — tracing=yes ? full : redacted (unit-tested)
+  redact.js      strip prompts/content from non-opted-in resources (unit-tested)
   enrich.js      name span-correlated log records (Honeycomb span events)
   forward.js     POST filtered payload to the OTLP sink (Honeycomb)
   app.js         framework-agnostic router (ingest + admin)

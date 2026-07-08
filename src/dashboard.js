@@ -25,7 +25,7 @@ function dashboardHtml() {
   th,td { text-align:right; padding:7px 10px; border-bottom:1px solid var(--line); }
   th:first-child,td:first-child { text-align:left; font-family:ui-monospace,monospace; }
   th { color:var(--mut); font-weight:600; font-size:12px; }
-  .fwd { color:var(--ok); } .drp { color:var(--drop); }
+  .fwd { color:var(--ok); } .drp { color:var(--drop); } .red { color:var(--acc); }
   .kpis { display:flex; gap:28px; flex-wrap:wrap; }
   .kpi b { display:block; font-size:26px; }
   .kpi span { color:var(--mut); font-size:12px; text-transform:uppercase; letter-spacing:.05em; }
@@ -47,13 +47,15 @@ function dashboardHtml() {
     <h2>How a repo opts in</h2>
     <p class="hint">Commit <code>.claude/settings.json</code> with
       <code>{ "env": { "OTEL_RESOURCE_ATTRIBUTES": "tracing=yes,repo=org/name" } }</code>.
-      Sessions in that repo are forwarded to Honeycomb; everything else is dropped.
-      A developer can override per session via their own <code>OTEL_RESOURCE_ATTRIBUTES</code>.</p>
+      Opted-in repos are forwarded in full; every other repo is still forwarded but
+      <span class="red">redacted</span> — structure, tokens, cost and timings only,
+      no prompts or content. A developer can override per session via their own
+      <code>OTEL_RESOURCE_ATTRIBUTES</code>.</p>
   </section>
   <section class="card">
     <h2>Counters by repo</h2>
     <table>
-      <thead><tr><th>repo</th><th>received</th><th class="fwd">forwarded</th><th class="drp">dropped</th></tr></thead>
+      <thead><tr><th>repo</th><th>received</th><th class="fwd">forwarded</th><th class="red">redacted</th><th class="drp">dropped</th></tr></thead>
       <tbody id="rows"></tbody>
     </table>
   </section>
@@ -63,18 +65,19 @@ function dashboardHtml() {
   const H = TOKEN ? { authorization: 'Bearer ' + TOKEN } : {};
   async function refresh() {
     const st = await fetch('admin/api/stats', { headers: H }).then((r) => r.json());
-    let tr=0, tf=0, td=0; const rows=[];
+    let tr=0, tf=0, tx=0, td=0; const rows=[];
     for (const [repo, sigs] of Object.entries(st.repos).sort()) {
-      let r=0,f=0,d=0;
-      for (const s of Object.values(sigs)) { r+=s.received||0; f+=s.forwarded||0; d+=s.dropped||0; }
-      tr+=r; tf+=f; td+=d;
-      rows.push('<tr><td>'+repo+'</td><td>'+r+'</td><td class="fwd">'+f+'</td><td class="drp">'+d+'</td></tr>');
+      let r=0,f=0,x=0,d=0;
+      for (const s of Object.values(sigs)) { r+=s.received||0; f+=s.forwarded||0; x+=s.redacted||0; d+=s.dropped||0; }
+      tr+=r; tf+=f; tx+=x; td+=d;
+      rows.push('<tr><td>'+repo+'</td><td>'+r+'</td><td class="fwd">'+f+'</td><td class="red">'+x+'</td><td class="drp">'+d+'</td></tr>');
     }
     document.getElementById('rows').innerHTML = rows.join('') ||
-      '<tr><td class="mut" colspan="4">No traffic yet.</td></tr>';
+      '<tr><td class="mut" colspan="5">No traffic yet.</td></tr>';
     document.getElementById('kpis').innerHTML =
       '<div class="kpi"><b>'+tr+'</b><span>received</span></div>' +
       '<div class="kpi"><b class="fwd">'+tf+'</b><span>forwarded</span></div>' +
+      '<div class="kpi"><b class="red">'+tx+'</b><span>redacted</span></div>' +
       '<div class="kpi"><b class="drp">'+td+'</b><span>dropped</span></div>';
   }
   refresh(); setInterval(refresh, 4000);

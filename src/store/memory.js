@@ -8,14 +8,11 @@ class MemoryStore {
     this.counters = {};
   }
 
-  // Apply a { label: {received,forwarded,dropped} } tally for one signal.
+  // Apply a { label: {received,forwarded,redacted,dropped} } tally for one signal.
   async recordTally(signal, tally) {
     for (const [label, t] of Object.entries(tally)) {
-      const r = (this.counters[label] ||= {});
-      const s = (r[signal] ||= { received: 0, forwarded: 0, dropped: 0 });
-      s.received += t.received;
-      s.forwarded += t.forwarded;
-      s.dropped += t.dropped;
+      const s = ((this.counters[label] ||= {})[signal] ||= {});
+      for (const [k, v] of Object.entries(t)) s[k] = (s[k] || 0) + v;
     }
   }
 

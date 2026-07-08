@@ -4,23 +4,27 @@ const { getAttr } = require('./otlp');
 // (default `tracing`) with a truthy value — typically via a committed
 // .claude/settings.json:  { "env": { "OTEL_RESOURCE_ATTRIBUTES": "tracing=yes" } }
 // A developer can override per session with their own OTEL_RESOURCE_ATTRIBUTES.
-// Everything not opted in is dropped.
+//
+// Opted-in resources are forwarded in full. Resources that did not opt in are
+// still forwarded — but redacted (structure/metadata only, no prompts, no
+// content) — unless forwardRedacted is false, in which case they are dropped.
 const OPT_IN = new Set(['yes', 'true', '1', 'on', 'enabled']);
 
 function optedIn(value) {
   return value != null && OPT_IN.has(String(value).trim().toLowerCase());
 }
 
-// Filter one OTLP payload down to the resource entries that opted into tracing.
-// Pure and side-effect free: returns the kept payload plus a per-label tally
-// the caller persists as counters. `repoKey` is only a label for the dashboard
-// (falls back to service.name, then "(untagged)") — it is NOT the filter key.
-function filterPayload(payload, field, { optInKey = 'tracing', repoKey = 'repo' } = {}) {
+// Partition one OTLP payload's resource entries into the ones to forward in full
+// and the ones to forward redacted. Pure: returns entry references plus a
+// per-label tally the caller persists as counters. `repoKey` only labels the
+// counters (falls back to service.name, then "(untagged)").
+function filterPayload(payload, field, { optInKey = 'tracing', repoKey = 'repo', forwardRedacted = true } = {}) {
   const entries = Array.isArray(payload && payload[field]) ? payload[field] : [];
-  const kept = [];
+  const forwardEntries = [];
+  const redactEntries = [];
   const tally = {};
   const bump = (label, k) => {
-    const t = (tally[label] ||= { received: 0, forwarded: 0, dropped: 0 });
+    const t = (tally[label] ||= { received: 0, forwarded: 0, redacted: 0, dropped: 0 });
     t[k] += 1;
   };
 
@@ -29,14 +33,17 @@ function filterPayload(payload, field, { optInKey = 'tracing', repoKey = 'repo' 
     const label = getAttr(attrs, repoKey) ?? getAttr(attrs, 'service.name') ?? '(untagged)';
     bump(label, 'received');
     if (optedIn(getAttr(attrs, optInKey))) {
-      kept.push(entry);
+      forwardEntries.push(entry);
       bump(label, 'forwarded');
+    } else if (forwardRedacted) {
+      redactEntries.push(entry);
+      bump(label, 'redacted');
     } else {
       bump(label, 'dropped');
     }
   }
 
-  return { filtered: { ...payload, [field]: kept }, tally, keptCount: kept.length };
+  return { forwardEntries, redactEntries, tally };
 }
 
 module.exports = { filterPayload, optedIn };

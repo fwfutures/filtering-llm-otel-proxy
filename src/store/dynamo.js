@@ -18,26 +18,27 @@ class DynamoStore {
   async recordTally(signal, tally) {
     const { UpdateCommand } = require('@aws-sdk/lib-dynamodb');
     await Promise.all(
-      Object.entries(tally).map(([label, t]) =>
-        this.doc.send(
+      Object.entries(tally).map(([label, t]) => {
+        // Build the atomic ADD expression from whatever counter keys are present
+        // (received, forwarded, redacted, dropped) so it stays future-proof.
+        const names = {};
+        const values = { ':label': label };
+        const adds = [];
+        Object.keys(t).forEach((k, i) => {
+          names[`#${i}`] = `${signal}_${k}`;
+          values[`:${i}`] = t[k];
+          adds.push(`#${i} :${i}`);
+        });
+        return this.doc.send(
           new UpdateCommand({
             TableName: this.table,
             Key: { pk: `counter#${label}` },
-            UpdateExpression: 'ADD #r :recv, #f :fwd, #d :drop SET label = :label',
-            ExpressionAttributeNames: {
-              '#r': `${signal}_received`,
-              '#f': `${signal}_forwarded`,
-              '#d': `${signal}_dropped`,
-            },
-            ExpressionAttributeValues: {
-              ':recv': t.received,
-              ':fwd': t.forwarded,
-              ':drop': t.dropped,
-              ':label': label,
-            },
+            UpdateExpression: `ADD ${adds.join(', ')} SET label = :label`,
+            ExpressionAttributeNames: names,
+            ExpressionAttributeValues: values,
           })
-        )
-      )
+        );
+      })
     );
   }
 
@@ -50,9 +51,9 @@ class DynamoStore {
       const label = item.label || item.pk.slice('counter#'.length);
       const signals = {};
       for (const [k, v] of Object.entries(item)) {
-        const m = /^(traces|metrics|logs)_(received|forwarded|dropped)$/.exec(k);
+        const m = /^(traces|metrics|logs)_(received|forwarded|redacted|dropped)$/.exec(k);
         if (!m) continue;
-        (signals[m[1]] ||= { received: 0, forwarded: 0, dropped: 0 })[m[2]] = Number(v);
+        (signals[m[1]] ||= {})[m[2]] = Number(v);
       }
       repos[label] = signals;
     }

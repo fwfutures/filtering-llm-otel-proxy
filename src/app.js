@@ -3,6 +3,7 @@
 // the Lambda Function URL adapter.
 const { signalForPath, getAttr } = require('./otlp');
 const { filterPayload } = require('./filter');
+const { redactEntry } = require('./redact');
 const { enrichLogs } = require('./enrich');
 const { forward } = require('./forward');
 const { dashboardHtml } = require('./dashboard');
@@ -39,21 +40,32 @@ async function handle(req, deps) {
     } catch {
       return json(400, { error: 'invalid JSON body' });
     }
-    const { filtered, tally, keptCount } = filterPayload(payload, sig.field, {
+    const { forwardEntries, redactEntries, tally } = filterPayload(payload, sig.field, {
       optInKey: env.OPT_IN_ATTR || 'tracing',
       repoKey: env.REPO_ATTR || 'repo',
+      forwardRedacted: (env.FORWARD_REDACTED || '1') !== '0',
     });
     await store.recordTally(sig.name, tally);
 
-    let result = { forwarded: false, reason: 'nothing opted in', status: 0 };
-    if (keptCount > 0) {
+    // Non-opted-in resources are forwarded with prompts/content stripped.
+    for (const entry of redactEntries) redactEntry(entry, sig.name, env);
+    const kept = [...forwardEntries, ...redactEntries];
+
+    let result = { forwarded: false, reason: 'nothing to forward', status: 0 };
+    if (kept.length > 0) {
+      const filtered = { ...payload, [sig.field]: kept };
       // Name span-correlated log records so Honeycomb doesn't show "unspecified".
       if (sig.name === 'logs' && (env.ENRICH_SPAN_EVENT_NAMES || '1') !== '0') enrichLogs(filtered);
       result = await forward(sig.name, filtered, env);
     }
-    // Always 200/partial-success to the client: OTLP exporters retry on 5xx,
-    // and a resource not opting into tracing is not a transport failure.
-    return json(200, { signal: sig.name, kept: keptCount, tally, sink: result });
+    // Always 200/partial-success to the client: OTLP exporters retry on 5xx.
+    return json(200, {
+      signal: sig.name,
+      forwarded: forwardEntries.length,
+      redacted: redactEntries.length,
+      tally,
+      sink: result,
+    });
   }
 
   // --- Admin: dashboard page --------------------------------------------
