@@ -1,0 +1,17 @@
+{
+  "name": "otel-filter",
+  "version": "0.1.0",
+  "description": "Tiny OTLP filter Lambda: gate Claude Code / LLM traces by a repo allowlist, forward to Honeycomb, with an admin dashboard.",
+  "license": "MIT",
+  "engines": { "node": ">=18" },
+  "main": "src/lambda.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test"
+  },
+  "dependencies": {},
+  "optionalDependencies": {
+    "@aws-sdk/client-dynamodb": "^3.600.0",
+    "@aws-sdk/lib-dynamodb": "^3.600.0"
+  }
+}

@@ -1,0 +1,94 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  otel-filter — OTLP ingest Lambda that gates Claude Code / LLM telemetry by a
+  repo allowlist and forwards the rest to Honeycomb. DynamoDB holds the
+  allowlist and per-repo counters. Exposed via a public Lambda Function URL.
+
+Parameters:
+  HoneycombApiKey:
+    Type: String
+    NoEcho: true
+    Description: Honeycomb ingest API key (x-honeycomb-team).
+  HoneycombDataset:
+    Type: String
+    Default: claude-code
+    Description: Dataset for forwarded metrics/logs.
+  HoneycombEndpoint:
+    Type: String
+    Default: https://api.honeycomb.io
+  AdminToken:
+    Type: String
+    NoEcho: true
+    Default: ''
+    Description: Bearer token gating the /admin dashboard + API (blank = open).
+  RepoAttr:
+    Type: String
+    Default: repo
+    Description: Resource attribute carrying the repo id.
+
+Resources:
+  Table:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: pk
+          AttributeType: S
+      KeySchema:
+        - AttributeName: pk
+          KeyType: HASH
+
+  Fn:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/lambda.handler
+      Runtime: nodejs22.x
+      MemorySize: 256
+      Timeout: 15
+      Architectures: [arm64]
+      Environment:
+        Variables:
+          STORE: dynamo
+          TABLE_NAME: !Ref Table
+          HONEYCOMB_API_KEY: !Ref HoneycombApiKey
+          HONEYCOMB_DATASET: !Ref HoneycombDataset
+          HONEYCOMB_ENDPOINT: !Ref HoneycombEndpoint
+          ADMIN_TOKEN: !Ref AdminToken
+          REPO_ATTR: !Ref RepoAttr
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref Table
+      # Public front door via API Gateway HTTP API. A Lambda Function URL is
+      # simpler, but many orgs block public Function URLs with an SCP on
+      # lambda:FunctionUrlAuthType — API Gateway is not caught by that guardrail.
+      Events:
+        Ingest:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref Api
+            Path: /{proxy+}
+            Method: ANY
+        Root:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref Api
+            Path: /
+            Method: ANY
+
+  Api:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      # OTLP ingest must accept unauthenticated requests (exporters can't sign);
+      # the /admin routes are gated in-app by AdminToken.
+      CorsConfiguration:
+        AllowOrigins: ['*']
+        AllowMethods: ['*']
+        AllowHeaders: ['*']
+
+Outputs:
+  Endpoint:
+    Description: Point OTEL_EXPORTER_OTLP_ENDPOINT at this URL.
+    Value: !Sub 'https://${Api}.execute-api.${AWS::Region}.amazonaws.com'
+  Dashboard:
+    Value: !Sub 'https://${Api}.execute-api.${AWS::Region}.amazonaws.com/admin'

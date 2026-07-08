@@ -1,0 +1,2237 @@
+{
+ "resourceLogs": [
+  {
+   "resource": {
+    "attributes": [
+     {
+      "key": "repo",
+      "value": {
+       "stringValue": "acme/some-service"
+      }
+     },
+     {
+      "key": "team.name",
+      "value": {
+       "stringValue": "payments"
+      }
+     },
+     {
+      "key": "host.arch",
+      "value": {
+       "stringValue": "arm64"
+      }
+     },
+     {
+      "key": "os.type",
+      "value": {
+       "stringValue": "darwin"
+      }
+     },
+     {
+      "key": "os.version",
+      "value": {
+       "stringValue": "25.5.0"
+      }
+     },
+     {
+      "key": "service.name",
+      "value": {
+       "stringValue": "claude-code"
+      }
+     },
+     {
+      "key": "service.version",
+      "value": {
+       "stringValue": "2.1.195"
+      }
+     }
+    ],
+    "droppedAttributesCount": 0
+   },
+   "scopeLogs": [
+    {
+     "scope": {
+      "name": "com.anthropic.claude_code.events",
+      "version": "2.1.195"
+     },
+     "logRecords": [
+      {
+       "timeUnixNano": "1783483223702000000",
+       "observedTimeUnixNano": "1783483223702000000",
+       "body": {
+        "stringValue": "claude_code.plugin_loaded"
+       },
+       "attributes": [
+        {
+         "key": "repo",
+         "value": {
+          "stringValue": "acme/some-service"
+         }
+        },
+        {
+         "key": "team.name",
+         "value": {
+          "stringValue": "payments"
+         }
+        },
+        {
+         "key": "user.id",
+         "value": {
+          "stringValue": "0000000000000000000000000000000000000000000000000000000000000000"
+         }
+        },
+        {
+         "key": "session.id",
+         "value": {
+          "stringValue": "22222222-2222-2222-2222-222222222222"
+         }
+        },
+        {
+         "key": "organization.id",
+         "value": {
+          "stringValue": "11111111-1111-1111-1111-111111111111"
+         }
+        },
+        {
+         "key": "user.email",
+         "value": {
+          "stringValue": "dev@example.com"
+         }
+        },
+        {
+         "key": "user.account_uuid",
+         "value": {
+          "stringValue": "33333333-3333-3333-3333-333333333333"
+         }
+        },
+        {
+         "key": "user.account_id",
+         "value": {
+          "stringValue": "user_EXAMPLE00000000000000"
+         }
+        },
+        {
+         "key": "terminal.type",
+         "value": {
+          "stringValue": "non-interactive"
+         }
+        },
+        {
+         "key": "event.name",
+         "value": {
+          "stringValue": "plugin_loaded"
+         }
+        },
+        {
+         "key": "event.timestamp",
+         "value": {
+          "stringValue": "2026-07-08T04:00:23.702Z"
+         }
+        },
+        {
+         "key": "event.sequence",
+         "value": {
+          "intValue": 0
+         }
+        },
+        {
+         "key": "plugin.name",
+         "value": {
+          "stringValue": "document-skills"
+         }
+        },
+        {
+         "key": "marketplace.name",
+         "value": {
+          "stringValue": "anthropic-agent-skills"
+         }
+        },
+        {
+         "key": "plugin.scope",
+         "value": {
+          "stringValue": "official"
+         }
+        },
+        {
+         "key": "enabled_via",
+         "value": {
+          "stringValue": "user-install"
+         }
+        },
+        {
+         "key": "plugin_id_hash",
+         "value": {
+          "stringValue": "7c27d6c0c849d072"
+         }
+        },
+        {
+         "key": "has_hooks",
+         "value": {
+          "boolValue": false
+         }
+        },
+        {
+         "key": "has_mcp",
+         "value": {
+          "boolValue": false
+         }
+        },
+        {
+         "key": "host_owned_mcp",
+         "value": {
+          "boolValue": false
+         }
+        },
+        {
+         "key": "skill_path_count",
+         "value": {
+          "intValue": 4
+         }
+        },
+        {
+         "key": "command_path_count",
+         "value": {
+          "intValue": 0
+         }
+        },
+        {
+         "key": "agent_path_count",
+         "value": {
+          "intValue": 0
+         }
+        },
+        {
+         "key": "safe_mode",
+         "value": {
+          "stringValue": "false"
+         }
+        }
+       ],
+       "droppedAttributesCount": 0
+      },
+      {
+       "timeUnixNano": "1783483223702000000",
+       "observedTimeUnixNano": "1783483223702000000",
+       "body": {
+        "stringValue": "claude_code.plugin_loaded"
+       },
+       "attributes": [
+        {
+         "key": "repo",
+         "value": {
+          "stringValue": "acme/some-service"
+         }
+        },
+        {
+         "key": "team.name",
+         "value": {
+          "stringValue": "payments"
+         }
+        },
+        {
+         "key": "user.id",
+         "value": {
+          "stringValue": "0000000000000000000000000000000000000000000000000000000000000000"
+         }
+        },
+        {
+         "key": "session.id",
+         "value": {
+          "stringValue": "22222222-2222-2222-2222-222222222222"
+         }
+        },
+        {
+         "key": "organization.id",
+         "value": {
+          "stringValue": "11111111-1111-1111-1111-111111111111"
+         }
+        },
+        {
+         "key": "user.email",
+         "value": {
+          "stringValue": "dev@example.com"
+         }
+        },
+        {
+         "key": "user.account_uuid",
+         "value": {
+          "stringValue": "33333333-3333-3333-3333-333333333333"
+         }
+        },
+        {
+         "key": "user.account_id",
+         "value": {
+          "stringValue": "user_EXAMPLE00000000000000"
+         }
+        },
+        {
+         "key": "terminal.type",
+         "value": {
+          "stringValue": "non-interactive"
+         }
+        },
+        {
+         "key": "event.name",
+         "value": {
+          "stringValue": "plugin_loaded"
+         }
+        },
+        {
+         "key": "event.timestamp",
+         "value": {
+          "stringValue": "2026-07-08T04:00:23.702Z"
+         }
+        },
+        {
+         "key": "event.sequence",
+         "value": {
+          "intValue": 1
+         }
+        },
+        {
+         "key": "plugin.name",
+         "value": {
+          "stringValue": "posthog"
+         }
+        },
+        {
+         "key": "marketplace.name",
+         "value": {
+          "stringValue": "claude-plugins-official"
+         }
+        },
+        {
+         "key": "plugin.version",
+         "value": {
+          "stringValue": "1.1.41"
+         }
+        },
+        {
+         "key": "plugin.scope",
+         "value": {
+          "stringValue": "official"
+         }
+        },
+        {
+         "key": "enabled_via",
+         "value": {
+          "stringValue": "user-install"
+         }
+        },
+        {
+         "key": "plugin_id_hash",
+         "value": {
+          "stringValue": "23e1faba7976e08a"
+         }
+        },
+        {
+         "key": "has_hooks",
+         "value": {
+          "boolValue": true
+         }
+        },
+        {
+         "key": "has_mcp",
+         "value": {
+          "boolValue": true
+         }
+        },
+        {
+         "key": "host_owned_mcp",
+         "value": {
+          "boolValue": false
+         }
+        },
+        {
+         "key": "skill_path_count",
+         "value": {
+          "intValue": 1
+         }
+        },
+        {
+         "key": "command_path_count",
+         "value": {
+          "intValue": 1
+         }
+        },
+        {
+         "key": "agent_path_count",
+         "value": {
+          "intValue": 1
+         }
+        },
+        {
+         "key": "safe_mode",
+         "value": {
+          "stringValue": "false"
+         }
+        }
+       ],
+       "droppedAttributesCount": 0
+      },
+      {
+       "timeUnixNano": "1783483223702000000",
+       "observedTimeUnixNano": "1783483223702000000",
+       "body": {
+        "stringValue": "claude_code.plugin_loaded"
+       },
+       "attributes": [
+        {
+         "key": "repo",
+         "value": {
+          "stringValue": "acme/some-service"
+         }
+        },
+        {
+         "key": "team.name",
+         "value": {
+          "stringValue": "payments"
+         }
+        },
+        {
+         "key": "user.id",
+         "value": {
+          "stringValue": "0000000000000000000000000000000000000000000000000000000000000000"
+         }
+        },
+        {
+         "key": "session.id",
+         "value": {
+          "stringValue": "22222222-2222-2222-2222-222222222222"
+         }
+        },
+        {
+         "key": "organization.id",
+         "value": {
+          "stringValue": "11111111-1111-1111-1111-111111111111"
+         }
+        },
+        {
+         "key": "user.email",
+         "value": {
+          "stringValue": "dev@example.com"
+         }
+        },
+        {
+         "key": "user.account_uuid",
+         "value": {
+          "stringValue": "33333333-3333-3333-3333-333333333333"
+         }
+        },
+        {
+         "key": "user.account_id",
+         "value": {
+          "stringValue": "user_EXAMPLE00000000000000"
+         }
+        },
+        {
+         "key": "terminal.type",
+         "value": {
+          "stringValue": "non-interactive"
+         }
+        },
+        {
+         "key": "event.name",
+         "value": {
+          "stringValue": "plugin_loaded"
+         }
+        },
+        {
+         "key": "event.timestamp",
+         "value": {
+          "stringValue": "2026-07-08T04:00:23.702Z"
+         }
+        },
+        {
+         "key": "event.sequence",
+         "value": {
+          "intValue": 2
+         }
+        },
+        {
+         "key": "plugin.name",
+         "value": {
+          "stringValue": "third-party"
+         }
+        },
+        {
+         "key": "marketplace.name",
+         "value": {
+          "stringValue": "third-party"
+         }
+        },
+        {
+         "key": "plugin.scope",
+         "value": {
+          "stringValue": "user-local"
+         }
+        },
+        {
+         "key": "enabled_via",
+         "value": {
+          "stringValue": "user-install"
+         }
+        },
+        {
+         "key": "plugin_id_hash",
+         "value": {
+          "stringValue": "e14fed636ded94da"
+         }
+        },
+        {
+         "key": "has_hooks",
+         "value": {
+          "boolValue": false
+         }
+        },
+        {
+         "key": "has_mcp",
+         "value": {
+          "boolValue": true
+         }
+        },
+        {
+         "key": "host_owned_mcp",
+         "value": {
+          "boolValue": false
+         }
+        },
+        {
+         "key": "skill_path_count",
+         "value": {
+          "intValue": 1
+         }
+        },
+        {
+         "key": "command_path_count",
+         "value": {
+          "intValue": 0
+         }
+        },
+        {
+         "key": "agent_path_count",
+         "value": {
+          "intValue": 0
+         }
+        },
+        {
+         "key": "safe_mode",
+         "value": {
+          "stringValue": "false"
+         }
+        }
+       ],
+       "droppedAttributesCount": 0
+      },
+      {
+       "timeUnixNano": "1783483223702000000",
+       "observedTimeUnixNano": "1783483223702000000",
+       "body": {
+        "stringValue": "claude_code.plugin_loaded"
+       },
+       "attributes": [
+        {
+         "key": "repo",
+         "value": {
+          "stringValue": "acme/some-service"
+         }
+        },
+        {
+         "key": "team.name",
+         "value": {
+          "stringValue": "payments"
+         }
+        },
+        {
+         "key": "user.id",
+         "value": {
+          "stringValue": "0000000000000000000000000000000000000000000000000000000000000000"
+         }
+        },
+        {
+         "key": "session.id",
+         "value": {
+          "stringValue": "22222222-2222-2222-2222-222222222222"
+         }
+        },
+        {
+         "key": "organization.id",
+         "value": {
+          "stringValue": "11111111-1111-1111-1111-111111111111"
+         }
+        },
+        {
+         "key": "user.email",
+         "value": {
+          "stringValue": "dev@example.com"
+         }
+        },
+        {
+         "key": "user.account_uuid",
+         "value": {
+          "stringValue": "33333333-3333-3333-3333-333333333333"
+         }
+        },
+        {
+         "key": "user.account_id",
+         "value": {
+          "stringValue": "user_EXAMPLE00000000000000"
+         }
+        },
+        {
+         "key": "terminal.type",
+         "value": {
+          "stringValue": "non-interactive"
+         }
+        },
+        {
+         "key": "event.name",
+         "value": {
+          "stringValue": "plugin_loaded"
+         }
+        },
+        {
+         "key": "event.timestamp",
+         "value": {
+          "stringValue": "2026-07-08T04:00:23.702Z"
+         }
+        },
+        {
+         "key": "event.sequence",
+         "value": {
+          "intValue": 3
+         }
+        },
+        {
+         "key": "plugin.name",
+         "value": {
+          "stringValue": "third-party"
+         }
+        },
+        {
+         "key": "marketplace.name",
+         "value": {
+          "stringValue": "third-party"
+         }
+        },
+        {
+         "key": "plugin.scope",
+         "value": {
+          "stringValue": "user-local"
+         }
+        },
+        {
+         "key": "enabled_via",
+         "value": {
+          "stringValue": "user-install"
+         }
+        },
+        {
+         "key": "plugin_id_hash",
+         "value": {
+          "stringValue": "f80c1b868f9a93a2"
+         }
+        },
+        {
+         "key": "has_hooks",
+         "value": {
+          "boolValue": false
+         }
+        },
+        {
+         "key": "has_mcp",
+         "value": {
+          "boolValue": false
+         }
+        },
+        {
+         "key": "host_owned_mcp",
+         "value": {
+          "boolValue": false
+         }
+        },
+        {
+         "key": "skill_path_count",
+         "value": {
+          "intValue": 1
+         }
+        },
+        {
+         "key": "command_path_count",
+         "value": {
+          "intValue": 0
+         }
+        },
+        {
+         "key": "agent_path_count",
+         "value": {
+          "intValue": 0
+         }
+        },
+        {
+         "key": "safe_mode",
+         "value": {
+          "stringValue": "false"
+         }
+        }
+       ],
+       "droppedAttributesCount": 0
+      },
+      {
+       "timeUnixNano": "1783483223702000000",
+       "observedTimeUnixNano": "1783483223702000000",
+       "body": {
+        "stringValue": "claude_code.plugin_loaded"
+       },
+       "attributes": [
+        {
+         "key": "repo",
+         "value": {
+          "stringValue": "acme/some-service"
+         }
+        },
+        {
+         "key": "team.name",
+         "value": {
+          "stringValue": "payments"
+         }
+        },
+        {
+         "key": "user.id",
+         "value": {
+          "stringValue": "0000000000000000000000000000000000000000000000000000000000000000"
+         }
+        },
+        {
+         "key": "session.id",
+         "value": {
+          "stringValue": "22222222-2222-2222-2222-222222222222"
+         }
+        },
+        {
+         "key": "organization.id",
+         "value": {
+          "stringValue": "11111111-1111-1111-1111-111111111111"
+         }
+        },
+        {
+         "key": "user.email",
+         "value": {
+          "stringValue": "dev@example.com"
+         }
+        },
+        {
+         "key": "user.account_uuid",
+         "value": {
+          "stringValue": "33333333-3333-3333-3333-333333333333"
+         }
+        },
+        {
+         "key": "user.account_id",
+         "value": {
+          "stringValue": "user_EXAMPLE00000000000000"
+         }
+        },
+        {
+         "key": "terminal.type",
+         "value": {
+          "stringValue": "non-interactive"
+         }
+        },
+        {
+         "key": "event.name",
+         "value": {
+          "stringValue": "plugin_loaded"
+         }
+        },
+        {
+         "key": "event.timestamp",
+         "value": {
+          "stringValue": "2026-07-08T04:00:23.702Z"
+         }
+        },
+        {
+         "key": "event.sequence",
+         "value": {
+          "intValue": 4
+         }
+        },
+        {
+         "key": "plugin.name",
+         "value": {
+          "stringValue": "third-party"
+         }
+        },
+        {
+         "key": "marketplace.name",
+         "value": {
+          "stringValue": "third-party"
+         }
+        },
+        {
+         "key": "plugin.scope",
+         "value": {
+          "stringValue": "user-local"
+         }
+        },
+        {
+         "key": "enabled_via",
+         "value": {
+          "stringValue": "user-install"
+         }
+        },
+        {
+         "key": "plugin_id_hash",
+         "value": {
+          "stringValue": "ff4c59e4738016ac"
+         }
+        },
+        {
+         "key": "has_hooks",
+         "value": {
+          "boolValue": false
+         }
+        },
+        {
+         "key": "has_mcp",
+         "value": {
+          "boolValue": false
+         }
+        },
+        {
+         "key": "host_owned_mcp",
+         "value": {
+          "boolValue": false
+         }
+        },
+        {
+         "key": "skill_path_count",
+         "value": {
+          "intValue": 1
+         }
+        },
+        {
+         "key": "command_path_count",
+         "value": {
+          "intValue": 0
+         }
+        },
+        {
+         "key": "agent_path_count",
+         "value": {
+          "intValue": 0
+         }
+        },
+        {
+         "key": "safe_mode",
+         "value": {
+          "stringValue": "false"
+         }
+        }
+       ],
+       "droppedAttributesCount": 0
+      },
+      {
+       "timeUnixNano": "1783483223702000000",
+       "observedTimeUnixNano": "1783483223702000000",
+       "body": {
+        "stringValue": "claude_code.hook_registered"
+       },
+       "attributes": [
+        {
+         "key": "repo",
+         "value": {
+          "stringValue": "acme/some-service"
+         }
+        },
+        {
+         "key": "team.name",
+         "value": {
+          "stringValue": "payments"
+         }
+        },
+        {
+         "key": "user.id",
+         "value": {
+          "stringValue": "0000000000000000000000000000000000000000000000000000000000000000"
+         }
+        },
+        {
+         "key": "session.id",
+         "value": {
+          "stringValue": "22222222-2222-2222-2222-222222222222"
+         }
+        },
+        {
+         "key": "organization.id",
+         "value": {
+          "stringValue": "11111111-1111-1111-1111-111111111111"
+         }
+        },
+        {
+         "key": "user.email",
+         "value": {
+          "stringValue": "dev@example.com"
+         }
+        },
+        {
+         "key": "user.account_uuid",
+         "value": {
+          "stringValue": "33333333-3333-3333-3333-333333333333"
+         }
+        },
+        {
+         "key": "user.account_id",
+         "value": {
+          "stringValue": "user_EXAMPLE00000000000000"
+         }
+        },
+        {
+         "key": "terminal.type",
+         "value": {
+          "stringValue": "non-interactive"
+         }
+        },
+        {
+         "key": "event.name",
+         "value": {
+          "stringValue": "hook_registered"
+         }
+        },
+        {
+         "key": "event.timestamp",
+         "value": {
+          "stringValue": "2026-07-08T04:00:23.702Z"
+         }
+        },
+        {
+         "key": "event.sequence",
+         "value": {
+          "intValue": 5
+         }
+        },
+        {
+         "key": "hook_event",
+         "value": {
+          "stringValue": "SessionEnd"
+         }
+        },
+        {
+         "key": "hook_type",
+         "value": {
+          "stringValue": "command"
+         }
+        },
+        {
+         "key": "hook_source",
+         "value": {
+          "stringValue": "pluginHook"
+         }
+        },
+        {
+         "key": "safe_mode",
+         "value": {
+          "stringValue": "false"
+         }
+        },
+        {
+         "key": "plugin.name",
+         "value": {
+          "stringValue": "posthog"
+         }
+        },
+        {
+         "key": "plugin_id_hash",
+         "value": {
+          "stringValue": "23e1faba7976e08a"
+         }
+        }
+       ],
+       "droppedAttributesCount": 0
+      },
+      {
+       "timeUnixNano": "1783483223702000000",
+       "observedTimeUnixNano": "1783483223702000000",
+       "body": {
+        "stringValue": "claude_code.hook_registered"
+       },
+       "attributes": [
+        {
+         "key": "repo",
+         "value": {
+          "stringValue": "acme/some-service"
+         }
+        },
+        {
+         "key": "team.name",
+         "value": {
+          "stringValue": "payments"
+         }
+        },
+        {
+         "key": "user.id",
+         "value": {
+          "stringValue": "0000000000000000000000000000000000000000000000000000000000000000"
+         }
+        },
+        {
+         "key": "session.id",
+         "value": {
+          "stringValue": "22222222-2222-2222-2222-222222222222"
+         }
+        },
+        {
+         "key": "organization.id",
+         "value": {
+          "stringValue": "11111111-1111-1111-1111-111111111111"
+         }
+        },
+        {
+         "key": "user.email",
+         "value": {
+          "stringValue": "dev@example.com"
+         }
+        },
+        {
+         "key": "user.account_uuid",
+         "value": {
+          "stringValue": "33333333-3333-3333-3333-333333333333"
+         }
+        },
+        {
+         "key": "user.account_id",
+         "value": {
+          "stringValue": "user_EXAMPLE00000000000000"
+         }
+        },
+        {
+         "key": "terminal.type",
+         "value": {
+          "stringValue": "non-interactive"
+         }
+        },
+        {
+         "key": "event.name",
+         "value": {
+          "stringValue": "hook_registered"
+         }
+        },
+        {
+         "key": "event.timestamp",
+         "value": {
+          "stringValue": "2026-07-08T04:00:23.702Z"
+         }
+        },
+        {
+         "key": "event.sequence",
+         "value": {
+          "intValue": 6
+         }
+        },
+        {
+         "key": "hook_event",
+         "value": {
+          "stringValue": "PreToolUse"
+         }
+        },
+        {
+         "key": "hook_type",
+         "value": {
+          "stringValue": "command"
+         }
+        },
+        {
+         "key": "hook_source",
+         "value": {
+          "stringValue": "pluginHook"
+         }
+        },
+        {
+         "key": "safe_mode",
+         "value": {
+          "stringValue": "false"
+         }
+        },
+        {
+         "key": "plugin.name",
+         "value": {
+          "stringValue": "posthog"
+         }
+        },
+        {
+         "key": "plugin_id_hash",
+         "value": {
+          "stringValue": "23e1faba7976e08a"
+         }
+        }
+       ],
+       "droppedAttributesCount": 0
+      },
+      {
+       "timeUnixNano": "1783483223795000000",
+       "observedTimeUnixNano": "1783483223795000000",
+       "body": {
+        "stringValue": "claude_code.mcp_server_connection"
+       },
+       "attributes": [
+        {
+         "key": "repo",
+         "value": {
+          "stringValue": "acme/some-service"
+         }
+        },
+        {
+         "key": "team.name",
+         "value": {
+          "stringValue": "payments"
+         }
+        },
+        {
+         "key": "user.id",
+         "value": {
+          "stringValue": "0000000000000000000000000000000000000000000000000000000000000000"
+         }
+        },
+        {
+         "key": "session.id",
+         "value": {
+          "stringValue": "22222222-2222-2222-2222-222222222222"
+         }
+        },
+        {
+         "key": "organization.id",
+         "value": {
+          "stringValue": "11111111-1111-1111-1111-111111111111"
+         }
+        },
+        {
+         "key": "user.email",
+         "value": {
+          "stringValue": "dev@example.com"
+         }
+        },
+        {
+         "key": "user.account_uuid",
+         "value": {
+          "stringValue": "33333333-3333-3333-3333-333333333333"
+         }
+        },
+        {
+         "key": "user.account_id",
+         "value": {
+          "stringValue": "user_EXAMPLE00000000000000"
+         }
+        },
+        {
+         "key": "terminal.type",
+         "value": {
+          "stringValue": "non-interactive"
+         }
+        },
+        {
+         "key": "event.name",
+         "value": {
+          "stringValue": "mcp_server_connection"
+         }
+        },
+        {
+         "key": "event.timestamp",
+         "value": {
+          "stringValue": "2026-07-08T04:00:23.795Z"
+         }
+        },
+        {
+         "key": "event.sequence",
+         "value": {
+          "intValue": 7
+         }
+        },
+        {
+         "key": "status",
+         "value": {
+          "stringValue": "connected"
+         }
+        },
+        {
+         "key": "transport_type",
+         "value": {
+          "stringValue": "stdio"
+         }
+        },
+        {
+         "key": "server_scope",
+         "value": {
+          "stringValue": "user"
+         }
+        },
+        {
+         "key": "duration_ms",
+         "value": {
+          "stringValue": "125"
+         }
+        },
+        {
+         "key": "is_plugin",
+         "value": {
+          "boolValue": false
+         }
+        }
+       ],
+       "droppedAttributesCount": 0
+      },
+      {
+       "timeUnixNano": "1783483223977000000",
+       "observedTimeUnixNano": "1783483223977000000",
+       "body": {
+        "stringValue": "claude_code.permission_mode_changed"
+       },
+       "attributes": [
+        {
+         "key": "repo",
+         "value": {
+          "stringValue": "acme/some-service"
+         }
+        },
+        {
+         "key": "team.name",
+         "value": {
+          "stringValue": "payments"
+         }
+        },
+        {
+         "key": "user.id",
+         "value": {
+          "stringValue": "0000000000000000000000000000000000000000000000000000000000000000"
+         }
+        },
+        {
+         "key": "session.id",
+         "value": {
+          "stringValue": "22222222-2222-2222-2222-222222222222"
+         }
+        },
+        {
+         "key": "organization.id",
+         "value": {
+          "stringValue": "11111111-1111-1111-1111-111111111111"
+         }
+        },
+        {
+         "key": "user.email",
+         "value": {
+          "stringValue": "dev@example.com"
+         }
+        },
+        {
+         "key": "user.account_uuid",
+         "value": {
+          "stringValue": "33333333-3333-3333-3333-333333333333"
+         }
+        },
+        {
+         "key": "user.account_id",
+         "value": {
+          "stringValue": "user_EXAMPLE00000000000000"
+         }
+        },
+        {
+         "key": "terminal.type",
+         "value": {
+          "stringValue": "non-interactive"
+         }
+        },
+        {
+         "key": "event.name",
+         "value": {
+          "stringValue": "permission_mode_changed"
+         }
+        },
+        {
+         "key": "event.timestamp",
+         "value": {
+          "stringValue": "2026-07-08T04:00:23.977Z"
+         }
+        },
+        {
+         "key": "event.sequence",
+         "value": {
+          "intValue": 8
+         }
+        },
+        {
+         "key": "from_mode",
+         "value": {
+          "stringValue": "auto"
+         }
+        },
+        {
+         "key": "to_mode",
+         "value": {
+          "stringValue": "default"
+         }
+        },
+        {
+         "key": "trigger",
+         "value": {
+          "stringValue": "auto_gate_denied"
+         }
+        }
+       ],
+       "droppedAttributesCount": 0
+      },
+      {
+       "timeUnixNano": "1783483224099000000",
+       "observedTimeUnixNano": "1783483224099000000",
+       "body": {
+        "stringValue": "claude_code.user_prompt"
+       },
+       "attributes": [
+        {
+         "key": "repo",
+         "value": {
+          "stringValue": "acme/some-service"
+         }
+        },
+        {
+         "key": "team.name",
+         "value": {
+          "stringValue": "payments"
+         }
+        },
+        {
+         "key": "user.id",
+         "value": {
+          "stringValue": "0000000000000000000000000000000000000000000000000000000000000000"
+         }
+        },
+        {
+         "key": "session.id",
+         "value": {
+          "stringValue": "22222222-2222-2222-2222-222222222222"
+         }
+        },
+        {
+         "key": "organization.id",
+         "value": {
+          "stringValue": "11111111-1111-1111-1111-111111111111"
+         }
+        },
+        {
+         "key": "user.email",
+         "value": {
+          "stringValue": "dev@example.com"
+         }
+        },
+        {
+         "key": "user.account_uuid",
+         "value": {
+          "stringValue": "33333333-3333-3333-3333-333333333333"
+         }
+        },
+        {
+         "key": "user.account_id",
+         "value": {
+          "stringValue": "user_EXAMPLE00000000000000"
+         }
+        },
+        {
+         "key": "terminal.type",
+         "value": {
+          "stringValue": "non-interactive"
+         }
+        },
+        {
+         "key": "event.name",
+         "value": {
+          "stringValue": "user_prompt"
+         }
+        },
+        {
+         "key": "event.timestamp",
+         "value": {
+          "stringValue": "2026-07-08T04:00:24.099Z"
+         }
+        },
+        {
+         "key": "event.sequence",
+         "value": {
+          "intValue": 9
+         }
+        },
+        {
+         "key": "prompt.id",
+         "value": {
+          "stringValue": "35363f83-61c2-4281-b077-f4b9b988fa37"
+         }
+        },
+        {
+         "key": "prompt_length",
+         "value": {
+          "stringValue": "32"
+         }
+        },
+        {
+         "key": "prompt",
+         "value": {
+          "stringValue": "<REDACTED>"
+         }
+        }
+       ],
+       "droppedAttributesCount": 0
+      },
+      {
+       "timeUnixNano": "1783483224110000000",
+       "observedTimeUnixNano": "1783483224110000000",
+       "body": {
+        "stringValue": "claude_code.mcp_server_connection"
+       },
+       "attributes": [
+        {
+         "key": "repo",
+         "value": {
+          "stringValue": "acme/some-service"
+         }
+        },
+        {
+         "key": "team.name",
+         "value": {
+          "stringValue": "payments"
+         }
+        },
+        {
+         "key": "user.id",
+         "value": {
+          "stringValue": "0000000000000000000000000000000000000000000000000000000000000000"
+         }
+        },
+        {
+         "key": "session.id",
+         "value": {
+          "stringValue": "22222222-2222-2222-2222-222222222222"
+         }
+        },
+        {
+         "key": "organization.id",
+         "value": {
+          "stringValue": "11111111-1111-1111-1111-111111111111"
+         }
+        },
+        {
+         "key": "user.email",
+         "value": {
+          "stringValue": "dev@example.com"
+         }
+        },
+        {
+         "key": "user.account_uuid",
+         "value": {
+          "stringValue": "33333333-3333-3333-3333-333333333333"
+         }
+        },
+        {
+         "key": "user.account_id",
+         "value": {
+          "stringValue": "user_EXAMPLE00000000000000"
+         }
+        },
+        {
+         "key": "terminal.type",
+         "value": {
+          "stringValue": "non-interactive"
+         }
+        },
+        {
+         "key": "event.name",
+         "value": {
+          "stringValue": "mcp_server_connection"
+         }
+        },
+        {
+         "key": "event.timestamp",
+         "value": {
+          "stringValue": "2026-07-08T04:00:24.110Z"
+         }
+        },
+        {
+         "key": "event.sequence",
+         "value": {
+          "intValue": 10
+         }
+        },
+        {
+         "key": "prompt.id",
+         "value": {
+          "stringValue": "35363f83-61c2-4281-b077-f4b9b988fa37"
+         }
+        },
+        {
+         "key": "status",
+         "value": {
+          "stringValue": "connected"
+         }
+        },
+        {
+         "key": "transport_type",
+         "value": {
+          "stringValue": "http"
+         }
+        },
+        {
+         "key": "server_scope",
+         "value": {
+          "stringValue": "dynamic"
+         }
+        },
+        {
+         "key": "duration_ms",
+         "value": {
+          "stringValue": "410"
+         }
+        },
+        {
+         "key": "is_plugin",
+         "value": {
+          "boolValue": true
+         }
+        },
+        {
+         "key": "plugin_id_hash",
+         "value": {
+          "stringValue": "e14fed636ded94da"
+         }
+        },
+        {
+         "key": "plugin.name",
+         "value": {
+          "stringValue": "third-party"
+         }
+        }
+       ],
+       "droppedAttributesCount": 0
+      },
+      {
+       "timeUnixNano": "1783483224115000000",
+       "observedTimeUnixNano": "1783483224115000000",
+       "body": {
+        "stringValue": "claude_code.mcp_server_connection"
+       },
+       "attributes": [
+        {
+         "key": "repo",
+         "value": {
+          "stringValue": "acme/some-service"
+         }
+        },
+        {
+         "key": "team.name",
+         "value": {
+          "stringValue": "payments"
+         }
+        },
+        {
+         "key": "user.id",
+         "value": {
+          "stringValue": "0000000000000000000000000000000000000000000000000000000000000000"
+         }
+        },
+        {
+         "key": "session.id",
+         "value": {
+          "stringValue": "22222222-2222-2222-2222-222222222222"
+         }
+        },
+        {
+         "key": "organization.id",
+         "value": {
+          "stringValue": "11111111-1111-1111-1111-111111111111"
+         }
+        },
+        {
+         "key": "user.email",
+         "value": {
+          "stringValue": "dev@example.com"
+         }
+        },
+        {
+         "key": "user.account_uuid",
+         "value": {
+          "stringValue": "33333333-3333-3333-3333-333333333333"
+         }
+        },
+        {
+         "key": "user.account_id",
+         "value": {
+          "stringValue": "user_EXAMPLE00000000000000"
+         }
+        },
+        {
+         "key": "terminal.type",
+         "value": {
+          "stringValue": "non-interactive"
+         }
+        },
+        {
+         "key": "event.name",
+         "value": {
+          "stringValue": "mcp_server_connection"
+         }
+        },
+        {
+         "key": "event.timestamp",
+         "value": {
+          "stringValue": "2026-07-08T04:00:24.115Z"
+         }
+        },
+        {
+         "key": "event.sequence",
+         "value": {
+          "intValue": 11
+         }
+        },
+        {
+         "key": "prompt.id",
+         "value": {
+          "stringValue": "35363f83-61c2-4281-b077-f4b9b988fa37"
+         }
+        },
+        {
+         "key": "status",
+         "value": {
+          "stringValue": "connected"
+         }
+        },
+        {
+         "key": "transport_type",
+         "value": {
+          "stringValue": "claudeai-proxy"
+         }
+        },
+        {
+         "key": "server_scope",
+         "value": {
+          "stringValue": "claudeai"
+         }
+        },
+        {
+         "key": "duration_ms",
+         "value": {
+          "stringValue": "3"
+         }
+        },
+        {
+         "key": "is_plugin",
+         "value": {
+          "boolValue": false
+         }
+        }
+       ],
+       "droppedAttributesCount": 0
+      },
+      {
+       "timeUnixNano": "1783483224119000000",
+       "observedTimeUnixNano": "1783483224119000000",
+       "body": {
+        "stringValue": "claude_code.mcp_server_connection"
+       },
+       "attributes": [
+        {
+         "key": "repo",
+         "value": {
+          "stringValue": "acme/some-service"
+         }
+        },
+        {
+         "key": "team.name",
+         "value": {
+          "stringValue": "payments"
+         }
+        },
+        {
+         "key": "user.id",
+         "value": {
+          "stringValue": "0000000000000000000000000000000000000000000000000000000000000000"
+         }
+        },
+        {
+         "key": "session.id",
+         "value": {
+          "stringValue": "22222222-2222-2222-2222-222222222222"
+         }
+        },
+        {
+         "key": "organization.id",
+         "value": {
+          "stringValue": "11111111-1111-1111-1111-111111111111"
+         }
+        },
+        {
+         "key": "user.email",
+         "value": {
+          "stringValue": "dev@example.com"
+         }
+        },
+        {
+         "key": "user.account_uuid",
+         "value": {
+          "stringValue": "33333333-3333-3333-3333-333333333333"
+         }
+        },
+        {
+         "key": "user.account_id",
+         "value": {
+          "stringValue": "user_EXAMPLE00000000000000"
+         }
+        },
+        {
+         "key": "terminal.type",
+         "value": {
+          "stringValue": "non-interactive"
+         }
+        },
+        {
+         "key": "event.name",
+         "value": {
+          "stringValue": "mcp_server_connection"
+         }
+        },
+        {
+         "key": "event.timestamp",
+         "value": {
+          "stringValue": "2026-07-08T04:00:24.119Z"
+         }
+        },
+        {
+         "key": "event.sequence",
+         "value": {
+          "intValue": 12
+         }
+        },
+        {
+         "key": "prompt.id",
+         "value": {
+          "stringValue": "35363f83-61c2-4281-b077-f4b9b988fa37"
+         }
+        },
+        {
+         "key": "status",
+         "value": {
+          "stringValue": "connected"
+         }
+        },
+        {
+         "key": "transport_type",
+         "value": {
+          "stringValue": "claudeai-proxy"
+         }
+        },
+        {
+         "key": "server_scope",
+         "value": {
+          "stringValue": "claudeai"
+         }
+        },
+        {
+         "key": "duration_ms",
+         "value": {
+          "stringValue": "1"
+         }
+        },
+        {
+         "key": "is_plugin",
+         "value": {
+          "boolValue": false
+         }
+        }
+       ],
+       "droppedAttributesCount": 0
+      },
+      {
+       "timeUnixNano": "1783483224120000000",
+       "observedTimeUnixNano": "1783483224120000000",
+       "body": {
+        "stringValue": "claude_code.mcp_server_connection"
+       },
+       "attributes": [
+        {
+         "key": "repo",
+         "value": {
+          "stringValue": "acme/some-service"
+         }
+        },
+        {
+         "key": "team.name",
+         "value": {
+          "stringValue": "payments"
+         }
+        },
+        {
+         "key": "user.id",
+         "value": {
+          "stringValue": "0000000000000000000000000000000000000000000000000000000000000000"
+         }
+        },
+        {
+         "key": "session.id",
+         "value": {
+          "stringValue": "22222222-2222-2222-2222-222222222222"
+         }
+        },
+        {
+         "key": "organization.id",
+         "value": {
+          "stringValue": "11111111-1111-1111-1111-111111111111"
+         }
+        },
+        {
+         "key": "user.email",
+         "value": {
+          "stringValue": "dev@example.com"
+         }
+        },
+        {
+         "key": "user.account_uuid",
+         "value": {
+          "stringValue": "33333333-3333-3333-3333-333333333333"
+         }
+        },
+        {
+         "key": "user.account_id",
+         "value": {
+          "stringValue": "user_EXAMPLE00000000000000"
+         }
+        },
+        {
+         "key": "terminal.type",
+         "value": {
+          "stringValue": "non-interactive"
+         }
+        },
+        {
+         "key": "event.name",
+         "value": {
+          "stringValue": "mcp_server_connection"
+         }
+        },
+        {
+         "key": "event.timestamp",
+         "value": {
+          "stringValue": "2026-07-08T04:00:24.120Z"
+         }
+        },
+        {
+         "key": "event.sequence",
+         "value": {
+          "intValue": 13
+         }
+        },
+        {
+         "key": "prompt.id",
+         "value": {
+          "stringValue": "35363f83-61c2-4281-b077-f4b9b988fa37"
+         }
+        },
+        {
+         "key": "status",
+         "value": {
+          "stringValue": "connected"
+         }
+        },
+        {
+         "key": "transport_type",
+         "value": {
+          "stringValue": "claudeai-proxy"
+         }
+        },
+        {
+         "key": "server_scope",
+         "value": {
+          "stringValue": "claudeai"
+         }
+        },
+        {
+         "key": "duration_ms",
+         "value": {
+          "stringValue": "1"
+         }
+        },
+        {
+         "key": "is_plugin",
+         "value": {
+          "boolValue": false
+         }
+        }
+       ],
+       "droppedAttributesCount": 0
+      },
+      {
+       "timeUnixNano": "1783483224120000000",
+       "observedTimeUnixNano": "1783483224120000000",
+       "body": {
+        "stringValue": "claude_code.mcp_server_connection"
+       },
+       "attributes": [
+        {
+         "key": "repo",
+         "value": {
+          "stringValue": "acme/some-service"
+         }
+        },
+        {
+         "key": "team.name",
+         "value": {
+          "stringValue": "payments"
+         }
+        },
+        {
+         "key": "user.id",
+         "value": {
+          "stringValue": "0000000000000000000000000000000000000000000000000000000000000000"
+         }
+        },
+        {
+         "key": "session.id",
+         "value": {
+          "stringValue": "22222222-2222-2222-2222-222222222222"
+         }
+        },
+        {
+         "key": "organization.id",
+         "value": {
+          "stringValue": "11111111-1111-1111-1111-111111111111"
+         }
+        },
+        {
+         "key": "user.email",
+         "value": {
+          "stringValue": "dev@example.com"
+         }
+        },
+        {
+         "key": "user.account_uuid",
+         "value": {
+          "stringValue": "33333333-3333-3333-3333-333333333333"
+         }
+        },
+        {
+         "key": "user.account_id",
+         "value": {
+          "stringValue": "user_EXAMPLE00000000000000"
+         }
+        },
+        {
+         "key": "terminal.type",
+         "value": {
+          "stringValue": "non-interactive"
+         }
+        },
+        {
+         "key": "event.name",
+         "value": {
+          "stringValue": "mcp_server_connection"
+         }
+        },
+        {
+         "key": "event.timestamp",
+         "value": {
+          "stringValue": "2026-07-08T04:00:24.120Z"
+         }
+        },
+        {
+         "key": "event.sequence",
+         "value": {
+          "intValue": 14
+         }
+        },
+        {
+         "key": "prompt.id",
+         "value": {
+          "stringValue": "35363f83-61c2-4281-b077-f4b9b988fa37"
+         }
+        },
+        {
+         "key": "status",
+         "value": {
+          "stringValue": "connected"
+         }
+        },
+        {
+         "key": "transport_type",
+         "value": {
+          "stringValue": "claudeai-proxy"
+         }
+        },
+        {
+         "key": "server_scope",
+         "value": {
+          "stringValue": "claudeai"
+         }
+        },
+        {
+         "key": "duration_ms",
+         "value": {
+          "stringValue": "1"
+         }
+        },
+        {
+         "key": "is_plugin",
+         "value": {
+          "boolValue": false
+         }
+        }
+       ],
+       "droppedAttributesCount": 0
+      },
+      {
+       "timeUnixNano": "1783483224120000000",
+       "observedTimeUnixNano": "1783483224120000000",
+       "body": {
+        "stringValue": "claude_code.mcp_server_connection"
+       },
+       "attributes": [
+        {
+         "key": "repo",
+         "value": {
+          "stringValue": "acme/some-service"
+         }
+        },
+        {
+         "key": "team.name",
+         "value": {
+          "stringValue": "payments"
+         }
+        },
+        {
+         "key": "user.id",
+         "value": {
+          "stringValue": "0000000000000000000000000000000000000000000000000000000000000000"
+         }
+        },
+        {
+         "key": "session.id",
+         "value": {
+          "stringValue": "22222222-2222-2222-2222-222222222222"
+         }
+        },
+        {
+         "key": "organization.id",
+         "value": {
+          "stringValue": "11111111-1111-1111-1111-111111111111"
+         }
+        },
+        {
+         "key": "user.email",
+         "value": {
+          "stringValue": "dev@example.com"
+         }
+        },
+        {
+         "key": "user.account_uuid",
+         "value": {
+          "stringValue": "33333333-3333-3333-3333-333333333333"
+         }
+        },
+        {
+         "key": "user.account_id",
+         "value": {
+          "stringValue": "user_EXAMPLE00000000000000"
+         }
+        },
+        {
+         "key": "terminal.type",
+         "value": {
+          "stringValue": "non-interactive"
+         }
+        },
+        {
+         "key": "event.name",
+         "value": {
+          "stringValue": "mcp_server_connection"
+         }
+        },
+        {
+         "key": "event.timestamp",
+         "value": {
+          "stringValue": "2026-07-08T04:00:24.120Z"
+         }
+        },
+        {
+         "key": "event.sequence",
+         "value": {
+          "intValue": 15
+         }
+        },
+        {
+         "key": "prompt.id",
+         "value": {
+          "stringValue": "35363f83-61c2-4281-b077-f4b9b988fa37"
+         }
+        },
+        {
+         "key": "status",
+         "value": {
+          "stringValue": "connected"
+         }
+        },
+        {
+         "key": "transport_type",
+         "value": {
+          "stringValue": "claudeai-proxy"
+         }
+        },
+        {
+         "key": "server_scope",
+         "value": {
+          "stringValue": "claudeai"
+         }
+        },
+        {
+         "key": "duration_ms",
+         "value": {
+          "stringValue": "0"
+         }
+        },
+        {
+         "key": "is_plugin",
+         "value": {
+          "boolValue": false
+         }
+        }
+       ],
+       "droppedAttributesCount": 0
+      },
+      {
+       "timeUnixNano": "1783483224384000000",
+       "observedTimeUnixNano": "1783483224384000000",
+       "body": {
+        "stringValue": "claude_code.mcp_server_connection"
+       },
+       "attributes": [
+        {
+         "key": "repo",
+         "value": {
+          "stringValue": "acme/some-service"
+         }
+        },
+        {
+         "key": "team.name",
+         "value": {
+          "stringValue": "payments"
+         }
+        },
+        {
+         "key": "user.id",
+         "value": {
+          "stringValue": "0000000000000000000000000000000000000000000000000000000000000000"
+         }
+        },
+        {
+         "key": "session.id",
+         "value": {
+          "stringValue": "22222222-2222-2222-2222-222222222222"
+         }
+        },
+        {
+         "key": "organization.id",
+         "value": {
+          "stringValue": "11111111-1111-1111-1111-111111111111"
+         }
+        },
+        {
+         "key": "user.email",
+         "value": {
+          "stringValue": "dev@example.com"
+         }
+        },
+        {
+         "key": "user.account_uuid",
+         "value": {
+          "stringValue": "33333333-3333-3333-3333-333333333333"
+         }
+        },
+        {
+         "key": "user.account_id",
+         "value": {
+          "stringValue": "user_EXAMPLE00000000000000"
+         }
+        },
+        {
+         "key": "terminal.type",
+         "value": {
+          "stringValue": "non-interactive"
+         }
+        },
+        {
+         "key": "event.name",
+         "value": {
+          "stringValue": "mcp_server_connection"
+         }
+        },
+        {
+         "key": "event.timestamp",
+         "value": {
+          "stringValue": "2026-07-08T04:00:24.384Z"
+         }
+        },
+        {
+         "key": "event.sequence",
+         "value": {
+          "intValue": 16
+         }
+        },
+        {
+         "key": "prompt.id",
+         "value": {
+          "stringValue": "35363f83-61c2-4281-b077-f4b9b988fa37"
+         }
+        },
+        {
+         "key": "status",
+         "value": {
+          "stringValue": "disconnected"
+         }
+        },
+        {
+         "key": "transport_type",
+         "value": {
+          "stringValue": "http"
+         }
+        },
+        {
+         "key": "server_scope",
+         "value": {
+          "stringValue": "dynamic"
+         }
+        },
+        {
+         "key": "duration_ms",
+         "value": {
+          "stringValue": "274"
+         }
+        },
+        {
+         "key": "is_plugin",
+         "value": {
+          "boolValue": true
+         }
+        },
+        {
+         "key": "plugin_id_hash",
+         "value": {
+          "stringValue": "e14fed636ded94da"
+         }
+        },
+        {
+         "key": "plugin.name",
+         "value": {
+          "stringValue": "third-party"
+         }
+        }
+       ],
+       "droppedAttributesCount": 0
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

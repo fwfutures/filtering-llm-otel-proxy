@@ -1,0 +1,5 @@
+node_modules/
+.aws-sam/
+*.log
+capture/
+.DS_Store
